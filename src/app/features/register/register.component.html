@@ -1,20 +1,42 @@
 <div class="auth-container">
   <div class="auth-card">
+
     <h2>{{ isLoginMode ? 'Connexion Client' : 'Nouvelle Inscription' }}</h2>
 
     <form [formGroup]="authForm" (ngSubmit)="onSubmit()">
-      
+
       <div class="form-group">
         <label>{{ isLoginMode ? 'Code Client' : 'Nom complet' }}</label>
-        <input 
-          type="text" 
-          formControlName="identifier" 
-          [placeholder]="isLoginMode ? 'Ex: 12345678' : 'Votre nom'">
+        <input
+          type="text"
+          formControlName="identifier"
+          [placeholder]="isLoginMode ? 'Ex: 12345678' : 'Votre nom'"
+        />
       </div>
 
       <div class="form-group">
         <label>Mot de passe</label>
-        <input type="password" formControlName="password">
+
+        <!-- Affichage du mot de passe (readonly) -->
+        <input
+          type="password"
+          formControlName="password"
+          readonly
+          class="password-display"
+        />
+
+        <!-- Pavé numérique -->
+        <div class="keypad">
+          <button
+            type="button"
+            class="key"
+            *ngFor="let key of keypad"
+            (click)="onKeyPress(key)"
+            [disabled]="key === null"
+          >
+            {{ key !== null ? key : '' }}
+          </button>
+        </div>
       </div>
 
       <button type="submit" class="btn-primary">
@@ -23,9 +45,10 @@
     </form>
 
     <div class="toggle-section">
-      <button (click)="toggleMode()" class="btn-link">
+      <button type="button" class="btn-link" (click)="toggleMode()">
         {{ isLoginMode ? "Pas de compte ? S'inscrire" : "Déjà client ? Se connecter" }}
       </button>
     </div>
+
   </div>
 </div>

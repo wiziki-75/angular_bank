@@ -1,0 +1,106 @@
+/* Conteneur général */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f2f4f8;
+}
+
+/* Carte */
+.auth-card {
+  background: white;
+  padding: 24px;
+  width: 340px;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+/* Titre */
+h2 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* Formulaire */
+.form-group {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Champ mot de passe */
+.password-display {
+  text-align: center;
+  font-size: 22px;
+  letter-spacing: 6px;
+  background: #eef1f7;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+}
+
+/* Pavé numérique */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  justify-items: center;
+}
+
+/* Touches */
+.key {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: #1f3c88;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.key:disabled {
+  background: transparent;
+  cursor: default;
+}
+
+.key:active {
+  transform: scale(0.95);
+}
+
+/* Boutons */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background: #1f3c88;
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.toggle-section {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #1f3c88;
+  cursor: pointer;
+}
