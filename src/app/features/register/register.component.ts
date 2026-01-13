@@ -11,6 +11,7 @@ import { AuthService } from '../../core/auth.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
+
 export class RegisterComponent implements OnInit {
   authForm!: FormGroup;
   isLoginMode = false;
@@ -23,46 +24,46 @@ export class RegisterComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // ESSENTIEL : Initialiser le formulaire ici pour débloquer les boutons
     this.authForm = this.fb.group({
-      identifier: ['', [Validators.required]], // Sera 'name' ou 'codeClient'
+      identifier: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(4)]]
     });
   }
 
   toggleMode() {
     this.isLoginMode = !this.isLoginMode;
-    this.authForm.reset(); // On vide le formulaire lors du switch
+    this.authForm.reset();
+    this.loading = false;
   }
 
   onSubmit() {
     if (this.authForm.invalid) return;
-
     this.loading = true;
+
     const { identifier, password } = this.authForm.value;
 
     if (this.isLoginMode) {
-      console.log('Tentative de connexion avec :', { clientCode: identifier }); // Log avant envoi
-
+      // On utilise le nom de propriété attendu par votre API (clientCode ou codeClient)
       this.authService.login({ clientCode: identifier, password }).subscribe({
         next: (response) => {
-          console.log('✅ Connexion réussie ! Résultat de l\'API :', response);
+          console.log('✅ Login API Response:', response);
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
-          console.error('❌ Erreur de connexion :', err);
+          console.error('❌ Login Error:', err);
           this.loading = false;
         }
       });
     } else {
-      console.log('Tentative d\'inscription avec :', { name: identifier });
-
       this.authService.register({ name: identifier, password }).subscribe({
         next: (response) => {
-          console.log('✅ Inscription réussie ! Résultat de l\'API :', response);
-          this.toggleMode();
+          console.log('✅ Register API Response:', response);
+          this.loading = false;
+          this.toggleMode(); // Bascule vers connexion après inscription
         },
         error: (err) => {
-          console.error('❌ Erreur d\'inscription :', err);
+          console.error('❌ Register Error:', err);
           this.loading = false;
         }
       });

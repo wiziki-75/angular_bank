@@ -1,40 +1,40 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/auth.service';
-
-interface Transaction {
-  id: number;
-  label: string;
-  amount: number;
-  date: Date;
-  type: 'credit' | 'debit';
-}
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  template: `
+    <div *ngIf="user">
+      <h1>Bienvenue, {{ user.name }} !</h1>
+      <p>Votre code client : {{ user.clientCode }}</p>
+      <button (click)="logout()">Déconnexion</button>
+    </div>
+  `
 })
 export class DashboardComponent implements OnInit {
-  userName: string = 'Utilisateur';
-  balance: number = 2450.75;
-  transactions: Transaction[] = [];
+  user: any;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // Simulation de récupération de données
-    this.loadDashboardData();
+    this.authService.getCurrentUser().subscribe({
+      next: (userData) => {
+        this.user = userData;
+        console.log('Données utilisateur chargées :', userData);
+      },
+      error: (err) => {
+        console.error('Accès refusé, redirection...', err);
+        this.router.navigate(['/register']);
+      }
+    });
   }
 
-  loadDashboardData() {
-    // Ici vous appellerez plus tard votre AccountService
-    this.transactions = [
-      { id: 1, label: 'Salaire Janvier', amount: 3200, date: new Date(), type: 'credit' },
-      { id: 2, label: 'Loyer', amount: -850, date: new Date(), type: 'debit' },
-      { id: 3, label: 'Supermarché', amount: -120.50, date: new Date(), type: 'debit' }
-    ];
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/register']);
   }
 }
