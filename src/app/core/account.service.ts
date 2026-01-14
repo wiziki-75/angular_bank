@@ -6,8 +6,9 @@ import { Observable } from 'rxjs';
 export interface Account {
   id: string;
   balance: number;
-  clientCode: string;
-  createdAt: string;
+  label: string;
+  openAt: string;
+  ownerId: string;
 }
 
 export interface OpenAccountDTO {

@@ -1,28 +1,52 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
+import { AccountService, Account } from '../../core/account.service';
 import { Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
+
+export interface User {
+  id?: string | number;
+  name: string;
+  clientCode?: string;
+  [key: string]: any;
+}
+
+export interface Transaction {
+  id: string | number;
+  type: 'EMIT' | 'RECEIVE' | string;
+  amount: number;
+  receiverName?: string;
+  senderName?: string;
+  label?: string;
+  name?: string;
+  createdAt?: string;
+  date?: string;
+  emittedAt?: string;
+  issuedAt?: string;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
 
-  user: any = null;
+  user: User | null = null;
+  accounts: Account[] = [];
+  selectedAccount: Account | null = null;
 
-  // ✅ Solde par défaut = ouverture de compte
   balance = 0;
-
-  transactions: any[] = [];
-  private accountId: string | null = null;
+  transactions: Transaction[] = [];
+  errorMessage: string = '';
 
   constructor(
     private authService: AuthService,
+    private accountService: AccountService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -30,7 +54,6 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     console.log('Dashboard init');
 
-    /** 🔹 1. Charger immédiatement le client */
     const storedUser = this.authService.getStoredUser();
     if (!storedUser) {
       this.router.navigate(['/register']);
@@ -38,58 +61,95 @@ export class DashboardComponent implements OnInit {
     }
 
     this.user = storedUser;
-
-    /** 🔹 2. Charger comptes + transactions (si dispo) */
-    this.loadAccountAndTransactions();
+    this.loadAccounts();
   }
 
   /* =========================
      DATA
      ========================= */
 
-  private loadAccountAndTransactions(): void {
-    this.authService.getAccounts().subscribe({
+  private loadAccounts(): void {
+    this.accountService.getAccounts().subscribe({
       next: (accounts) => {
+        this.accounts = accounts;
+        
         if (!accounts || accounts.length === 0) {
-          console.warn('Aucun compte trouvé → solde initial conservé (250€)');
+          console.warn('Aucun compte trouvé');
+          this.errorMessage = 'Aucun compte disponible';
           return;
         }
         
-        // TO DO : gérer les différentzs comptes
-        const account = accounts[0];
-        this.accountId = account.id ?? account.accountId ?? null;
-
-        // ✅ Solde réel SI l’API le fournit
-        if (typeof account.balance === 'number') {
-          this.balance = account.balance;
-        } else if (typeof account.total === 'number') {
-          this.balance = account.total;
-        }
-
-        if (!this.accountId) return;
-
-        this.authService.getTransactions(this.accountId).subscribe({
-          next: (txs) => {
-            console.log(this.transactions)
-            this.transactions = (txs ?? [])
-              .sort((a: any, b: any) => {
-                const da = new Date(a.createdAt ?? a.date ?? a.emittedAt).getTime();
-                const db = new Date(b.createdAt ?? b.date ?? b.emittedAt).getTime();
-                return db - da;
-              })
-              .slice(0, 10);
-              // Rafraîchir l’affichage
-              this.cdr.detectChanges();
-          },
-          error: err => {
-            console.error('Erreur chargement transactions', err);
-          }
-        });
+        this.selectedAccount = accounts[0];
+        this.loadAccountData();
+        this.cdr.detectChanges();
       },
-      error: err => {
-        console.error('Erreur chargement comptes → solde initial conservé', err);
+      error: (err) => {
+        console.error('Erreur chargement comptes', err);
+        this.errorMessage = 'Impossible de charger vos comptes';
       }
     });
+  }
+
+  onAccountSelect(account: Account): void {
+    this.selectedAccount = account;
+    this.balance = 0;
+    this.transactions = [];
+    this.errorMessage = '';
+    this.loadAccountData();
+  }
+
+  private loadAccountData(): void {
+    if (!this.selectedAccount) return;
+
+    const accountId = this.getAccountId();
+    if (!accountId) return;
+
+    this.balance = this.getBalance();
+
+    this.authService.getTransactions(String(accountId)).subscribe({
+      next: (txs) => {
+        console.log('Transactions chargées:', txs);
+        this.transactions = (txs ?? [])
+          .sort((a: any, b: any) => {
+            const da = new Date(a.createdAt ?? a.date ?? a.emittedAt ?? a.issuedAt).getTime();
+            const db = new Date(b.createdAt ?? b.date ?? b.emittedAt ?? b.issuedAt).getTime();
+            return db - da;
+          })
+          .slice(0, 10);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erreur chargement transactions', err);
+        this.errorMessage = 'Impossible de charger les transactions';
+      }
+    });
+  }
+
+  /* =========================
+     HELPERS - Account properties
+     ========================= */
+
+  getAccountId(account?: Account): string | number | null {
+    const acc = account ?? this.selectedAccount;
+    if (!acc) return null;
+    return (acc as any).id ?? 
+           (acc as any).accountId ?? 
+           (acc as any).account_id ?? 
+           null;
+  }
+
+  getBalance(account?: Account): number {
+    const acc = account ?? this.selectedAccount;
+    if (!acc) return 0;
+    const a = acc as any;
+    return a.balance ?? a.total ?? a.solde ?? 0;
+  }
+
+  getAccountLabel(account?: Account): string {
+    const acc = account ?? this.selectedAccount;
+    if (!acc) return 'Sans label';
+    const a = acc as any;
+    return a.clientCode ?? a.label ?? a.name ?? 'Sans label';
   }
 
   /* =========================
@@ -97,16 +157,20 @@ export class DashboardComponent implements OnInit {
      ========================= */
 
   getInitials(name: string): string {
-    if (!name) return '';
+    if (!name) return '?';
     return name
       .split(' ')
       .map(n => n[0])
       .join('')
-      .toUpperCase();
+      .toUpperCase()
+      .slice(0, 2);
   }
 
   formatDate(date: any): string {
+    if (!date) return '';
     const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
@@ -123,6 +187,11 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/transaction']);
   }
 
+  goToInfo(): void {
+    this.router.navigate(['/info'], { 
+      state: { selectedAccount: this.selectedAccount } 
+    });
+  }
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/register']);
