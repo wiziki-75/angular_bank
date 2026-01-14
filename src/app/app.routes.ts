@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { RegisterComponent } from './features/register/register.component';
+import { TransactionComponent } from './features/transaction/transaction.component';
 
 export const routes: Routes = [
   // On redirige la racine vers register
@@ -10,5 +11,6 @@ export const routes: Routes = [
   { 
     path: 'dashboard', 
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
-  }
+  },
+  { path: 'transaction', component: TransactionComponent }
 ];
