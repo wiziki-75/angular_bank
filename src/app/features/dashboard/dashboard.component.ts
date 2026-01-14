@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/auth.service';
 import { Router } from '@angular/router';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,14 +16,15 @@ export class DashboardComponent implements OnInit {
   user: any = null;
 
   // ✅ Solde par défaut = ouverture de compte
-  balance = 250;
+  balance = 0;
 
   transactions: any[] = [];
   private accountId: string | null = null;
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -52,7 +54,8 @@ export class DashboardComponent implements OnInit {
           console.warn('Aucun compte trouvé → solde initial conservé (250€)');
           return;
         }
-
+        
+        // TO DO : gérer les différentzs comptes
         const account = accounts[0];
         this.accountId = account.id ?? account.accountId ?? null;
 
@@ -67,13 +70,16 @@ export class DashboardComponent implements OnInit {
 
         this.authService.getTransactions(this.accountId).subscribe({
           next: (txs) => {
+            console.log(this.transactions)
             this.transactions = (txs ?? [])
               .sort((a: any, b: any) => {
                 const da = new Date(a.createdAt ?? a.date ?? a.emittedAt).getTime();
                 const db = new Date(b.createdAt ?? b.date ?? b.emittedAt).getTime();
                 return db - da;
               })
-              .slice(0, 5);
+              .slice(0, 10);
+              // Rafraîchir l’affichage
+              this.cdr.detectChanges();
           },
           error: err => {
             console.error('Erreur chargement transactions', err);
