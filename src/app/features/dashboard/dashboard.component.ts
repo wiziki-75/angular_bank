@@ -114,7 +114,7 @@ export class DashboardComponent implements OnInit {
      ========================= */
 
   goToTransfer(): void {
-    this.router.navigate(['/transfer']);
+    this.router.navigate(['/transaction']);
   }
 
   logout(): void {
