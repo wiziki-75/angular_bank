@@ -11,15 +11,13 @@ import { AuthService } from '../../core/auth.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-
 export class RegisterComponent implements OnInit {
 
   authForm!: FormGroup;
   isLoginMode = false;
-  loading = false;
 
-  keypad: (number | null)[] = [];
-  readonly MAX_PASSWORD_LENGTH = 6;
+  keypad: (number | '')[] = [];
+  enteredPassword = '';
 
   constructor(
     private fb: FormBuilder,
@@ -28,50 +26,41 @@ export class RegisterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // ESSENTIEL : Initialiser le formulaire ici pour débloquer les boutons
     this.authForm = this.fb.group({
       identifier: ['', Validators.required],
-      password: ['', [
-        Validators.required,
-        Validators.minLength(4),
-        Validators.maxLength(this.MAX_PASSWORD_LENGTH)
-      ]]
+      password: ['', [Validators.required, Validators.maxLength(6)]]
     });
 
     this.generateKeypad();
   }
 
   /* =========================
-     PAVÉ NUMÉRIQUE
+     KEYPAD
      ========================= */
 
   generateKeypad(): void {
-    const numbers = Array.from({ length: 10 }, (_, i) => i);
-    const emptyKeys = [null, null];
-    const keys = [...numbers, ...emptyKeys];
+    const digits: number[] = Array.from({ length: 10 }, (_, i) => i);
+    const shuffled = digits.sort(() => Math.random() - 0.5);
 
-    for (let i = keys.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [keys[i], keys[j]] = [keys[j], keys[i]];
-    }
+    const keypad: (number | '')[] = [...shuffled];
+    keypad.splice(4, 0, '');
+    keypad.splice(9, 0, '');
 
-    this.keypad = keys;
+    this.keypad = keypad;
+    this.enteredPassword = '';
+    this.authForm.get('password')?.setValue('');
   }
 
-  onKeyPress(key: number | null): void {
-    if (key === null) return;
+  onKeyPress(key: number | ''): void {
+    if (key === '') return;
+    if (this.enteredPassword.length >= 6) return;
 
-    const control = this.authForm.get('password');
-    const currentValue: string = control?.value || '';
-
-    // 🔒 Limite à 6 chiffres
-    if (currentValue.length >= this.MAX_PASSWORD_LENGTH) return;
-
-    control?.setValue(currentValue + key);
+    this.enteredPassword += key.toString();
+    this.authForm.get('password')?.setValue(this.enteredPassword);
   }
 
   /* =========================
-     MODE LOGIN / REGISTER
+     FORM
      ========================= */
 
   toggleMode(): void {
@@ -80,51 +69,20 @@ export class RegisterComponent implements OnInit {
     this.generateKeypad();
   }
 
-  /* =========================
-     IDENTIFIANT CLIENT
-     ========================= */
-
-  private generateClientIdentifier(): string {
-    // Identifiant client simple : 8 chiffres
-    return Math.floor(10000000 + Math.random() * 90000000).toString();
-  }
-
-  /* =========================
-     SUBMIT
-     ========================= */
-
   onSubmit(): void {
     if (this.authForm.invalid) return;
-    this.loading = true;
 
     const { identifier, password } = this.authForm.value;
 
     if (this.isLoginMode) {
-
       this.authService.login({ clientCode: identifier, password }).subscribe({
-        next: () => {
-          this.generateKeypad();
-          this.router.navigate(['/dashboard']);
-        },
-        error: () => this.loading = false
+        next: () => this.router.navigate(['/dashboard']),
+        error: err => console.error('❌ Login error', err)
       });
-
     } else {
-      // 🆕 Création identifiant client
-      const clientIdentifier = this.generateClientIdentifier();
-
-      console.log('🆔 Identifiant client créé :', clientIdentifier);
-
-      this.authService.register({
-        name: identifier,
-        clientCode: clientIdentifier,
-        password
-      }).subscribe({
-        next: () => {
-          // 🔁 Redirection directe vers le compte client
-          this.router.navigate(['/dashboard']);
-        },
-        error: () => this.loading = false
+      this.authService.register({ name: identifier, password }).subscribe({
+        next: () => this.router.navigate(['/dashboard']),
+        error: err => console.error('❌ Register error', err)
       });
     }
   }

@@ -1,46 +1,113 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = environment.apiUrl;
+  private readonly API_URL = 'https://coding-bank.fly.dev';
 
   constructor(private http: HttpClient) {}
 
-  register(userData: any): Observable<any> {
-    return this.http.post(`${this.API_URL}/auth/register`, userData);
-  }
+  /* =========================
+     AUTH
+     ========================= */
 
-  // On ajoute .pipe(tap(...)) pour intercepter la réponse du login
-  login(credentials: any): Observable<any> {
-    return this.http.post<any>(`${this.API_URL}/auth/login`, credentials).pipe(
-      tap(response => {
-        console.log('Login response:', response.jwt);
-        if (response && response.jwt) {
-          // On stocke le token JWT dans le navigateur
-          localStorage.setItem('auth_token', response.jwt);
-        }
+  register(data: { name: string; password: string }): Observable<any> {
+    return this.http.post(`${this.API_URL}/auth/register`, data).pipe(
+      tap((res: any) => {
+        this.persistAuthFromResponse(res);
+        const user = this.getStoredUser();
+        console.log('🆔 Identifiant client créé :', user?.clientCode);
       })
     );
   }
 
-  // Nouvelle méthode pour récupérer les infos de l'utilisateur connecté
-  getCurrentUser(): Observable<any> {
-    const token = localStorage.getItem('auth_token');
-    console.log(token)
-    
-    // On crée les headers avec le format standard 'Bearer'
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    
-    return this.http.get(`${this.API_URL}/auth/current-user`, { headers });
+  login(data: { clientCode: string; password: string }): Observable<any> {
+    return this.http.post(`${this.API_URL}/auth/login`, data).pipe(
+      tap((res: any) => {
+        this.persistAuthFromResponse(res);
+      })
+    );
   }
 
-  // Pour vider le stockage à la déconnexion
+  getCurrentUser(): Observable<any> {
+    const token = this.getStoredToken();
+    if (!token) return throwError(() => new Error('No token'));
+
+    return this.http.get(`${this.API_URL}/auth/current-user`, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      tap((res: any) => {
+        const user = res?.user ?? res;
+        if (user) localStorage.setItem('current_user', JSON.stringify(user));
+      })
+    );
+  }
+
   logout(): void {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('current_user');
+  }
+
+  /* =========================
+     ACCOUNTS
+     ========================= */
+
+  getAccounts(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/accounts`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  getTransactions(accountId: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.API_URL}/accounts/${accountId}/transactions`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  /* =========================
+     STORAGE HELPERS
+     ========================= */
+
+  getStoredUser(): any | null {
+    const raw = localStorage.getItem('current_user');
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  getStoredToken(): string | null {
+    return localStorage.getItem('access_token');
+  }
+
+  private persistAuthFromResponse(res: any): void {
+    // ✅ Coding-bank renvoie le token dans "jwt"
+    const token =
+      res?.jwt ??
+      res?.access_token ??
+      res?.accessToken ??
+      res?.token ??
+      null;
+
+    const user =
+      res?.user ??
+      res?.currentUser ??
+      null;
+
+    if (token) localStorage.setItem('access_token', token);
+    if (user) localStorage.setItem('current_user', JSON.stringify(user));
+
+    // Debug
+    console.log('AUTH RESPONSE:', res);
+    console.log('TOKEN STORED:', token);
+    console.log('USER STORED:', user);
+  }
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.getStoredToken();
+    return new HttpHeaders({
+      Authorization: `Bearer ${token ?? ''}`
+    });
   }
 }
