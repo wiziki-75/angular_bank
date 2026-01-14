@@ -2,38 +2,128 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/auth.service';
 import { Router } from '@angular/router';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div *ngIf="user">
-      <h1>Bienvenue, {{ user.name }} !</h1>
-      <p>Votre code client : {{ user.clientCode }}</p>
-      <button (click)="logout()">Déconnexion</button>
-    </div>
-  `
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  user: any;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  user: any = null;
+
+  // ✅ Solde par défaut = ouverture de compte
+  balance = 0;
+
+  transactions: any[] = [];
+  private accountId: string | null = null;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
-    this.authService.getCurrentUser().subscribe({
-      next: (userData) => {
-        this.user = userData;
-        console.log('Données utilisateur chargées :', userData);
+    console.log('Dashboard init');
+
+    /** 🔹 1. Charger immédiatement le client */
+    const storedUser = this.authService.getStoredUser();
+    if (!storedUser) {
+      this.router.navigate(['/register']);
+      return;
+    }
+
+    this.user = storedUser;
+
+    /** 🔹 2. Charger comptes + transactions (si dispo) */
+    this.loadAccountAndTransactions();
+  }
+
+  /* =========================
+     DATA
+     ========================= */
+
+  private loadAccountAndTransactions(): void {
+    this.authService.getAccounts().subscribe({
+      next: (accounts) => {
+        if (!accounts || accounts.length === 0) {
+          console.warn('Aucun compte trouvé → solde initial conservé (250€)');
+          return;
+        }
+        
+        // TO DO : gérer les différentzs comptes
+        const account = accounts[0];
+        this.accountId = account.id ?? account.accountId ?? null;
+
+        // ✅ Solde réel SI l’API le fournit
+        if (typeof account.balance === 'number') {
+          this.balance = account.balance;
+        } else if (typeof account.total === 'number') {
+          this.balance = account.total;
+        }
+
+        if (!this.accountId) return;
+
+        this.authService.getTransactions(this.accountId).subscribe({
+          next: (txs) => {
+            console.log(this.transactions)
+            this.transactions = (txs ?? [])
+              .sort((a: any, b: any) => {
+                const da = new Date(a.createdAt ?? a.date ?? a.emittedAt).getTime();
+                const db = new Date(b.createdAt ?? b.date ?? b.emittedAt).getTime();
+                return db - da;
+              })
+              .slice(0, 10);
+              // Rafraîchir l’affichage
+              this.cdr.detectChanges();
+          },
+          error: err => {
+            console.error('Erreur chargement transactions', err);
+          }
+        });
       },
-      error: (err) => {
-        console.error('Accès refusé, redirection...', err);
-        this.router.navigate(['/register']);
+      error: err => {
+        console.error('Erreur chargement comptes → solde initial conservé', err);
       }
     });
   }
 
-  logout() {
+  /* =========================
+     UI HELPERS
+     ========================= */
+
+  getInitials(name: string): string {
+    if (!name) return '';
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  }
+
+  formatDate(date: any): string {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}h${minutes}`;
+  }
+
+  /* =========================
+     ACTIONS
+     ========================= */
+
+  goToTransfer(): void {
+    this.router.navigate(['/transaction']);
+  }
+
+  logout(): void {
     this.authService.logout();
     this.router.navigate(['/register']);
   }

@@ -1,31 +1,68 @@
 <div class="dashboard-container">
+
+  <!-- Bandeau accueil -->
   <header class="dashboard-header">
-    <h1>Bienvenue, {{ userName }}</h1>
+    <h2>Bonjour, {{ user?.name || 'Client' }}</h2>
+
     <div class="balance-card">
-      <small>Solde actuel</small>
-      <h2 [ngClass]="{'positive': balance >= 0, 'negative': balance < 0}">
+      <small>Solde disponible</small>
+      <h1 [class.positive]="balance >= 0" [class.negative]="balance < 0">
         {{ balance | currency:'EUR':'symbol':'1.2-2' }}
-      </h2>
+      </h1>
     </div>
   </header>
 
+  <!-- Actions -->
   <section class="quick-actions">
-    <button class="btn-action">Effectuer un virement</button>
-    <button class="btn-action">RIB / IBAN</button>
+    <button class="btn-primary" (click)="goToTransfer()">
+      Effectuer un virement
+    </button>
+
+    <button class="btn-secondary" (click)="logout()">
+      Déconnexion
+    </button>
   </section>
 
+  <!-- Transactions -->
   <section class="transactions-section">
     <h3>Dernières opérations</h3>
-    <div class="transaction-list">
-      <div *ngFor="let t of transactions" class="transaction-item">
-        <div class="tx-info">
-          <span class="tx-label">{{ t.label }}</span>
-          <span class="tx-date">{{ t.date | date:'dd/MM/yyyy' }}</span>
+
+    <!-- État vide -->
+    <div class="empty" *ngIf="!transactions || transactions.length === 0">
+      Aucune opération à afficher pour le moment.
+    </div>
+
+    <div class="transaction-list" *ngIf="transactions && transactions.length > 0">
+      <div *ngFor="let tx of transactions" class="transaction-item">
+
+        <div class="tx-left">
+          <!-- Avatar initiales -->
+          <div class="avatar">
+            {{ getInitials(tx.receiverName || tx.senderName || tx.label || tx.name || '') }}
+          </div>
+
+          <div class="tx-info">
+            <!-- Nom émetteur/receveur -->
+            <div class="tx-name">
+              {{ tx.receiverName || tx.senderName || tx.label || tx.name || 'Transaction' }}
+            </div>
+
+            <!-- Date format 14/01/2025 14h30 -->
+            <div class="tx-date">
+              {{ formatDate(tx.createdAt || tx.date || tx.emittedAt || tx.issuedAt) }}
+            </div>
+          </div>
         </div>
-        <div class="tx-amount" [class.credit]="t.type === 'credit'" [class.debit]="t.type === 'debit'">
-          {{ t.amount > 0 ? '+' : '' }}{{ t.amount | currency:'EUR' }}
+
+        <!-- Montant : négatif pour virement émis -->
+        <div class="tx-amount"
+             [class.credit]="(tx.type === 'EMIT' ? -tx.amount : tx.amount) > 0"
+             [class.debit]="(tx.type === 'EMIT' ? -tx.amount : tx.amount) < 0">
+          {{ (tx.type === 'EMIT' ? -tx.amount : tx.amount) | currency:'EUR':'symbol':'1.2-2' }}
         </div>
+
       </div>
     </div>
   </section>
+
 </div>
