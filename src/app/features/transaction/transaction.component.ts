@@ -26,7 +26,7 @@ export class TransactionComponent implements OnInit {
     private accountService: AccountService
   ) {
     this.transactionForm = this.fb.group({
-      emitterAccountId: ['', [Validators.required]],
+      emitterAccountId: [{ value: '', disabled: true }, [Validators.required]], // ← Désactivé initialement
       receiverAccountId: ['', [Validators.required]],
       amount: ['', [Validators.required, Validators.min(0.01)]],
       description: ['', [Validators.required, Validators.minLength(3)]]
@@ -43,6 +43,7 @@ export class TransactionComponent implements OnInit {
       next: (accounts) => {
         this.accounts = accounts;
         this.isLoadingAccounts = false;
+        this.transactionForm.get('emitterAccountId')?.enable(); // ← Active le champ une fois chargé
         console.log('Comptes chargés:', accounts);
       },
       error: (err) => {
