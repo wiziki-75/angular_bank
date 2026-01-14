@@ -18,6 +18,7 @@ export class TransactionComponent implements OnInit {
   successMessage: string = '';
   errorMessage: string = '';
   isLoading: boolean = false;
+  isLoadingAccounts: boolean = true;
 
   constructor(
     private fb: FormBuilder,
@@ -25,7 +26,8 @@ export class TransactionComponent implements OnInit {
     private accountService: AccountService
   ) {
     this.transactionForm = this.fb.group({
-      accountId: ['', [Validators.required]],
+      emitterAccountId: ['', [Validators.required]],
+      receiverAccountId: ['', [Validators.required]],
       amount: ['', [Validators.required, Validators.min(0.01)]],
       description: ['', [Validators.required, Validators.minLength(3)]]
     });
@@ -36,22 +38,26 @@ export class TransactionComponent implements OnInit {
   }
 
   loadAccounts(): void {
+    this.isLoadingAccounts = true;
     this.accountService.getAccounts().subscribe({
       next: (accounts) => {
         this.accounts = accounts;
+        this.isLoadingAccounts = false;
         console.log('Comptes chargés:', accounts);
       },
       error: (err) => {
         console.error('Erreur lors du chargement des comptes:', err);
         this.errorMessage = 'Impossible de charger vos comptes';
+        this.isLoadingAccounts = false;
       }
     });
   }
 
   onAccountSelect(): void {
-    const accountId = this.transactionForm.get('accountId')?.value;
+    const accountId = this.transactionForm.get('emitterAccountId')?.value;
     if (accountId) {
-      this.selectedAccount = this.accounts.find(acc => acc.id === accountId) || null;
+      // Conversion pour s'assurer de la comparaison correcte
+      this.selectedAccount = this.accounts.find(acc => String(acc.id) === String(accountId)) || null;
       // Mettre à jour la validation du montant en fonction du solde
       const amountControl = this.transactionForm.get('amount');
       if (this.selectedAccount) {
@@ -81,12 +87,14 @@ export class TransactionComponent implements OnInit {
       return;
     }
 
-    const receiverAccountId = this.transactionForm.get('accountId')?.value;
+    const receiverAccountId = this.transactionForm.get('receiverAccountId')?.value;
+    const emitterAccountId = this.transactionForm.get('emitterAccountId')?.value;
 
-    console.log('receiverAccountId: ', this.transactionForm.get('accountId')?.value);
+    console.log('receiverAccountId: ', receiverAccountId);
+    console.log('emitterAccountId: ', emitterAccountId);
     
     if (!this.selectedAccount) {
-      this.errorMessage = 'Veuillez sélectionner un compte';
+      this.errorMessage = 'Veuillez sélectionner votre compte émetteur';
       return;
     }
 
@@ -102,7 +110,7 @@ export class TransactionComponent implements OnInit {
     this.successMessage = '';
 
     const transactionData: EmitTransactionDTO = {
-      emitterAccountId: this.selectedAccount.id,
+      emitterAccountId: emitterAccountId,
       receiverAccountId: receiverAccountId,
       amount: parseFloat(amount),
       description: this.transactionForm.get('description')?.value

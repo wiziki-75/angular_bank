@@ -11,19 +11,40 @@
 
   <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="transaction-form">
     
+    <!-- Compte émetteur (votre compte) -->
+    <div class="form-group">
+      <label for="emitterAccountId">Votre compte (compte émetteur) *</label>
+      <select 
+        id="emitterAccountId" 
+        formControlName="emitterAccountId"
+        (change)="onAccountSelect()"
+        class="form-control"
+        [disabled]="isLoadingAccounts"
+      >
+        <option value="">
+          {{ isLoadingAccounts ? 'Chargement des comptes...' : '-- Sélectionnez votre compte --' }}
+        </option>
+        <option *ngFor="let account of accounts" [value]="account.id">
+          {{ account.id }} - Solde: {{ account.balance | number:'1.2-2' }}€
+        </option>
+      </select>
+      <div *ngIf="transactionForm.get('emitterAccountId')?.invalid && transactionForm.get('emitterAccountId')?.touched" class="error-text">
+        Veuillez sélectionner votre compte
+      </div>
+    </div>
+
     <!-- Compte receveur -->
     <div class="form-group">
-      <label for="accountId">ID du compte receveur *</label>
+      <label for="receiverAccountId">ID du compte receveur *</label>
       <input 
         type="text" 
-        id="accountId" 
-        formControlName="accountId"
-        (blur)="onAccountSelect()"
+        id="receiverAccountId" 
+        formControlName="receiverAccountId"
         placeholder="Entrez l'ID du compte destinataire"
         class="form-control"
       />
-      <div *ngIf="transactionForm.get('accountId')?.invalid && transactionForm.get('accountId')?.touched" class="error-text">
-        L'ID du compte est requis
+      <div *ngIf="transactionForm.get('receiverAccountId')?.invalid && transactionForm.get('receiverAccountId')?.touched" class="error-text">
+        L'ID du compte receveur est requis
       </div>
     </div>
 
