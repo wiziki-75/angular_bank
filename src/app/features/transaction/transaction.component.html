@@ -1,0 +1,88 @@
+<div class="transaction-container">
+  <h1>Émettre une transaction</h1>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="transaction-form">
+    
+    <!-- Compte receveur -->
+    <div class="form-group">
+      <label for="accountId">ID du compte receveur *</label>
+      <input 
+        type="text" 
+        id="accountId" 
+        formControlName="accountId"
+        (blur)="onAccountSelect()"
+        placeholder="Entrez l'ID du compte destinataire"
+        class="form-control"
+      />
+      <div *ngIf="transactionForm.get('accountId')?.invalid && transactionForm.get('accountId')?.touched" class="error-text">
+        L'ID du compte est requis
+      </div>
+    </div>
+
+    <!-- Montant -->
+    <div class="form-group">
+      <label for="amount">Montant (€) *</label>
+      <input 
+        type="number" 
+        id="amount" 
+        formControlName="amount"
+        step="0.01"
+        min="0.01"
+        [max]="maxAmount"
+        placeholder="0.00"
+        class="form-control"
+      />
+      
+      <div *ngIf="selectedAccount" class="info-text">
+        <p>Solde disponible: <strong>{{ selectedAccount.balance | number:'1.2-2' }}€</strong></p>
+        <p *ngIf="transactionForm.get('amount')?.value > 0">
+          Solde après transaction: <strong>{{ availableBalance | number:'1.2-2' }}€</strong>
+        </p>
+      </div>
+
+      <div *ngIf="transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched" class="error-text">
+        <span *ngIf="transactionForm.get('amount')?.errors?.['required']">Le montant est requis</span>
+        <span *ngIf="transactionForm.get('amount')?.errors?.['min']">Le montant doit être supérieur à 0</span>
+        <span *ngIf="transactionForm.get('amount')?.errors?.['max']">
+          Le montant ne peut pas dépasser votre solde ({{ maxAmount | number:'1.2-2' }}€)
+        </span>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label for="description">Description *</label>
+      <textarea 
+        id="description" 
+        formControlName="description"
+        placeholder="Description de la transaction"
+        rows="3"
+        class="form-control"
+      ></textarea>
+      <div *ngIf="transactionForm.get('description')?.invalid && transactionForm.get('description')?.touched" class="error-text">
+        <span *ngIf="transactionForm.get('description')?.errors?.['required']">La description est requise</span>
+        <span *ngIf="transactionForm.get('description')?.errors?.['minlength']">
+          La description doit contenir au moins 3 caractères
+        </span>
+      </div>
+    </div>
+
+    <!-- Bouton de soumission -->
+    <button 
+      type="submit" 
+      class="btn btn-primary"
+      [disabled]="transactionForm.invalid || isLoading"
+    >
+      <span *ngIf="!isLoading">Envoyer la transaction</span>
+      <span *ngIf="isLoading">Traitement en cours...</span>
+    </button>
+  </form>
+</div>
