@@ -45,8 +45,8 @@
       <div *ngIf="transactionForm.get('receiverAccountId')?.invalid && transactionForm.get('receiverAccountId')?.touched" class="error-text">
         L'ID du compte receveur est requis
       </div>
-      <div *ngIf="transactionForm.get('receiverAccountId')?.value == selectedAccount?.id" class="error-text">
-        Vous pouvez pas transférer des fonds à votre propre compte.
+      <div *ngIf="transactionForm.get('receiverAccountId')?.value && transactionForm.get('receiverAccountId')?.value == selectedAccount?.id" class="error-text">
+        Vous ne pouvez pas transférer des fonds à votre propre compte.
       </div>
     </div>
 
