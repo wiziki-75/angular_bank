@@ -47,8 +47,7 @@ export class RegisterComponent implements OnInit {
     keypad.splice(9, 0, '');
 
     this.keypad = keypad;
-    this.enteredPassword = '';
-    this.authForm.get('password')?.setValue('');
+    this.clearPassword();
   }
 
   onKeyPress(key: number | ''): void {
@@ -57,6 +56,15 @@ export class RegisterComponent implements OnInit {
 
     this.enteredPassword += key.toString();
     this.authForm.get('password')?.setValue(this.enteredPassword);
+  }
+
+  /* =========================
+     CLEAR PASSWORD
+     ========================= */
+
+  clearPassword(): void {
+    this.enteredPassword = '';
+    this.authForm.get('password')?.setValue('');
   }
 
   /* =========================

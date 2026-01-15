@@ -41,6 +41,11 @@ input {
   box-sizing: border-box;
 }
 
+/* Wrapper mot de passe */
+.password-wrapper {
+  position: relative;
+}
+
 /* Champ mot de passe */
 .password-display {
   text-align: center;
@@ -49,6 +54,25 @@ input {
   background: #eef1f7;
   border: 1px solid #ccc;
   margin-bottom: 12px;
+  padding-right: 36px;
+}
+
+/* Croix clear */
+.clear-btn {
+  position: absolute;
+  right: 8px;
+  top: 40%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  color: #666;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  color: #c62828;
 }
 
 /* Pavé numérique */
