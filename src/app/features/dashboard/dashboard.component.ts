@@ -17,6 +17,9 @@ export interface Transaction {
   id: string | number;
   type: 'EMIT' | 'RECEIVE' | string;
   amount: number;
+  emitter: any;
+  receiver: any;
+  description?: string;
   receiverName?: string;
   senderName?: string;
   label?: string;
@@ -41,6 +44,7 @@ export class DashboardComponent implements OnInit {
   selectedAccount: Account | null = null;
 
   balance = 0;
+  emitter = null;
   transactions: Transaction[] = [];
   errorMessage: string = '';
 
@@ -109,14 +113,16 @@ export class DashboardComponent implements OnInit {
     this.authService.getTransactions(String(accountId)).subscribe({
       next: (txs) => {
         console.log('Transactions chargées:', txs);
+        console.log(this.getAccountId());
         this.transactions = (txs ?? [])
           .sort((a: any, b: any) => {
             const da = new Date(a.createdAt ?? a.date ?? a.emittedAt ?? a.issuedAt).getTime();
             const db = new Date(b.createdAt ?? b.date ?? b.emittedAt ?? b.issuedAt).getTime();
             return db - da;
           })
-          .slice(0, 10);
+          .slice(0, 5);
         this.cdr.detectChanges();
+        console.log(this.transactions)
       },
       error: (err) => {
         console.error('Erreur chargement transactions', err);
