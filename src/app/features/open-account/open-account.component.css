@@ -118,3 +118,23 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.btn-back {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #e8eaf6;
+  color: #1f3c88;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 20px;
+  transition: background 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-back:hover {
+  background: #d1d5f0;
+}

@@ -1,4 +1,8 @@
 <div class="open-account-container">
+  <button class="btn-back" (click)="goBack()">
+    ← Retour
+  </button>
+
   <header class="page-header">
     <h2>Ouverture d'un compte</h2>
     <p>Créer un nouveau compte bancaire</p>
@@ -48,14 +52,6 @@
         class="btn-primary" 
         [disabled]="isLoading">
         {{ isLoading ? 'Création en cours...' : 'Créer le compte' }}
-      </button>
-
-      <button 
-        type="button" 
-        class="btn-secondary" 
-        (click)="goBack()"
-        [disabled]="isLoading">
-        Retour
       </button>
     </div>
   </form>
