@@ -182,3 +182,13 @@
   border-radius: 10px;
   margin-bottom: 16px;
 }
+/* ✅ Transactions cliquables */
+.transaction-item.clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.transaction-item.clickable:hover {
+  background: #f6f7fb;
+}
+

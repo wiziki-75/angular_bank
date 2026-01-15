@@ -1,0 +1,93 @@
+<div class="detail-container">
+
+  <button class="btn-back" (click)="goBack()">← Retour</button>
+
+  <h1>Détail de la transaction</h1>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="loading" class="loading-card">
+    Chargement...
+  </div>
+
+  <div *ngIf="!loading && transaction" class="detail-card">
+
+    <!-- Bandeau principal -->
+    <div class="top-row">
+      <div class="avatar">
+        {{ getInitials(getDisplayName()) }}
+      </div>
+
+      <div class="main-info">
+        <div class="title">{{ getDisplayName() }}</div>
+        <div class="subtitle">{{ formatDate(getDateValue()) }}</div>
+      </div>
+
+      <div class="amount"
+           [class.credit]="getSignedAmount() > 0"
+           [class.debit]="getSignedAmount() < 0">
+        {{ getSignedAmount() | currency:'EUR':'symbol':'1.2-2' }}
+      </div>
+    </div>
+
+    <!-- Infos copiables -->
+    <div class="grid">
+
+      <div class="row">
+        <span class="label">ID transaction</span>
+        <span class="value with-copy">
+          {{ getTransactionId() }}
+          <button class="copy-btn"
+                  type="button"
+                  (click)="copyToClipboard(getTransactionId(), 'txId')"
+                  [disabled]="!getTransactionId()">
+            📋
+          </button>
+          <span class="copied" *ngIf="copiedKey === 'txId'">Copié ✓</span>
+        </span>
+      </div>
+
+      <div class="row">
+        <span class="label">Statut</span>
+        <span class="value badge">{{ getStatus() }}</span>
+      </div>
+
+      <div class="row">
+        <span class="label">Compte émetteur</span>
+        <span class="value with-copy">
+          {{ getEmitterAccountId() }}
+          <button class="copy-btn"
+                  type="button"
+                  (click)="copyToClipboard(getEmitterAccountId(), 'fromId')"
+                  [disabled]="!getEmitterAccountId()">
+            📋
+          </button>
+          <span class="copied" *ngIf="copiedKey === 'fromId'">Copié ✓</span>
+        </span>
+      </div>
+
+      <div class="row">
+        <span class="label">Compte receveur</span>
+        <span class="value with-copy">
+          {{ getReceiverAccountId() }}
+          <button class="copy-btn"
+                  type="button"
+                  (click)="copyToClipboard(getReceiverAccountId(), 'toId')"
+                  [disabled]="!getReceiverAccountId()">
+            📋
+          </button>
+          <span class="copied" *ngIf="copiedKey === 'toId'">Copié ✓</span>
+        </span>
+      </div>
+
+      <div class="row full">
+        <span class="label">Description</span>
+        <span class="value">{{ getDescription() }}</span>
+      </div>
+
+    </div>
+
+  </div>
+</div>

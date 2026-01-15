@@ -1,0 +1,184 @@
+.detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.btn-back {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #e8eaf6;
+  color: #1f3c88;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 20px;
+  transition: background 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-back:hover {
+  background: #d1d5f0;
+}
+
+h1 {
+  margin-bottom: 18px;
+}
+
+.error-message {
+  padding: 12px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.loading-card {
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  color: #666;
+}
+
+.detail-card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 14px;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #e8eaf6;
+  color: #1f3c88;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.main-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #1f3c88;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.amount {
+  font-weight: 800;
+  font-size: 18px;
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+.amount.credit {
+  color: #2e7d32;
+}
+
+.amount.debit {
+  color: #c62828;
+}
+
+/* grid infos */
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row.full {
+  flex-direction: column;
+}
+
+.label {
+  font-weight: 600;
+  color: #666;
+}
+
+.value {
+  color: #333;
+  font-weight: 600;
+}
+
+.with-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-btn {
+  border: none;
+  background: #e8eaf6;
+  color: #1f3c88;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.2s ease;
+}
+
+.copy-btn:hover {
+  background: #d1d5f0;
+}
+
+.copy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.copied {
+  font-size: 12px;
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.badge {
+  background: #e8eaf6;
+  padding: 6px 10px;
+  border-radius: 10px;
+  color: #1f3c88;
+  display: inline-flex;
+  width: fit-content;
+}
