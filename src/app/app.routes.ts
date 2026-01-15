@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { RegisterComponent } from './features/register/register.component';
 import { TransactionComponent } from './features/transaction/transaction.component';
 import { InfoComponent } from './features/info/info.component';
+import { OpenAccountComponent } from './features/open-account/open-account.component';
 
 export const routes: Routes = [
   // On redirige la racine vers register
@@ -14,5 +15,6 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   { path: 'transaction', component: TransactionComponent },
-  { path: 'info', component: InfoComponent }
+  { path: 'info', component: InfoComponent },
+  { path: 'open-account', component: OpenAccountComponent }
 ];

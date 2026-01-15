@@ -12,7 +12,8 @@ export interface Account {
 }
 
 export interface OpenAccountDTO {
-  clientCode: string;
+  initialBalance: number;
+  label: string;
 }
 
 @Injectable({

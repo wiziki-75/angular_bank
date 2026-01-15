@@ -192,6 +192,11 @@ export class DashboardComponent implements OnInit {
       state: { selectedAccount: this.selectedAccount } 
     });
   }
+
+  goToOpenAccount(): void {
+    this.router.navigate(['/open-account']);
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/register']);
