@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TransactionService, EmitTransactionDTO } from '../../core/transaction.service';
 import { AccountService, Account } from '../../core/account.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-transaction',
@@ -23,7 +24,8 @@ export class TransactionComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private transactionService: TransactionService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private router: Router
   ) {
     this.transactionForm = this.fb.group({
       emitterAccountId: [{ value: '', disabled: true }, [Validators.required]], // ← Désactivé initialement
@@ -133,5 +135,9 @@ export class TransactionComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

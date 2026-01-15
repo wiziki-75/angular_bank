@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { RegisterComponent } from './features/register/register.component';
 import { TransactionComponent } from './features/transaction/transaction.component';
 import { InfoComponent } from './features/info/info.component';
+import { OpenAccountComponent } from './features/open-account/open-account.component';
 
 export const routes: Routes = [
   // Redirection racine
@@ -31,6 +32,9 @@ export const routes: Routes = [
 
   // Info compte
   { path: 'info', component: InfoComponent },
+
+  //Ouverture compte
+  { path: 'open-account', component: OpenAccountComponent },
 
   // Fallback sécurité
   { path: '**', redirectTo: 'register' }
