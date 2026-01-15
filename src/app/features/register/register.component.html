@@ -1,7 +1,7 @@
 <div class="auth-container">
   <div class="auth-card">
 
-    <h2>{{ isLoginMode ? 'Connexion Client' : 'Nouvelle Inscription' }}</h2>
+    <h2>{{ isLoginMode ? 'Connexion Client' : 'Inscription' }}</h2>
 
     <form [formGroup]="authForm" (ngSubmit)="onSubmit()">
 
@@ -17,13 +17,25 @@
       <div class="form-group">
         <label>Mot de passe</label>
 
-        <!-- Affichage du mot de passe (readonly) -->
-        <input
-          type="password"
-          formControlName="password"
-          readonly
-          class="password-display"
-        />
+        <!-- Champ mot de passe + croix -->
+        <div class="password-wrapper">
+          <input
+            type="password"
+            formControlName="password"
+            readonly
+            class="password-display"
+          />
+
+          <button
+            type="button"
+            class="clear-btn"
+            *ngIf="enteredPassword.length > 0"
+            (click)="clearPassword()"
+            aria-label="Effacer le mot de passe"
+          >
+            ✕
+          </button>
+        </div>
 
         <!-- Pavé numérique -->
         <div class="keypad">
@@ -32,9 +44,9 @@
             class="key"
             *ngFor="let key of keypad"
             (click)="onKeyPress(key)"
-            [disabled]="key === null"
+            [disabled]="key === ''"
           >
-            {{ key !== null ? key : '' }}
+            {{ key }}
           </button>
         </div>
       </div>
