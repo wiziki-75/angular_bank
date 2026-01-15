@@ -17,6 +17,9 @@ export interface Transaction {
   id: string | number;
   type: 'EMIT' | 'RECEIVE' | string;
   amount: number;
+  emitter: any;
+  receiver: any;
+  description?: string;
   receiverName?: string;
   senderName?: string;
   label?: string;
@@ -41,6 +44,7 @@ export class DashboardComponent implements OnInit {
   selectedAccount: Account | null = null;
 
   balance = 0;
+  emitter = null;
   transactions: Transaction[] = [];
   errorMessage: string = '';
 
@@ -72,13 +76,13 @@ export class DashboardComponent implements OnInit {
     this.accountService.getAccounts().subscribe({
       next: (accounts) => {
         this.accounts = accounts;
-        
+
         if (!accounts || accounts.length === 0) {
           console.warn('Aucun compte trouvé');
           this.errorMessage = 'Aucun compte disponible';
           return;
         }
-        
+
         this.selectedAccount = accounts[0];
         this.loadAccountData();
         this.cdr.detectChanges();
@@ -109,14 +113,16 @@ export class DashboardComponent implements OnInit {
     this.authService.getTransactions(String(accountId)).subscribe({
       next: (txs) => {
         console.log('Transactions chargées:', txs);
+        console.log(this.getAccountId());
         this.transactions = (txs ?? [])
           .sort((a: any, b: any) => {
             const da = new Date(a.createdAt ?? a.date ?? a.emittedAt ?? a.issuedAt).getTime();
             const db = new Date(b.createdAt ?? b.date ?? b.emittedAt ?? b.issuedAt).getTime();
             return db - da;
           })
-          .slice(0, 10);
+          .slice(0, 5);
         this.cdr.detectChanges();
+        console.log(this.transactions)
       },
       error: (err) => {
         console.error('Erreur chargement transactions', err);
@@ -132,9 +138,9 @@ export class DashboardComponent implements OnInit {
   getAccountId(account?: Account): string | number | null {
     const acc = account ?? this.selectedAccount;
     if (!acc) return null;
-    return (acc as any).id ?? 
-           (acc as any).accountId ?? 
-           (acc as any).account_id ?? 
+    return (acc as any).id ??
+           (acc as any).accountId ??
+           (acc as any).account_id ??
            null;
   }
 
@@ -170,13 +176,24 @@ export class DashboardComponent implements OnInit {
     if (!date) return '';
     const d = new Date(date);
     if (isNaN(d.getTime())) return '';
-    
+
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     return `${day}/${month}/${year} ${hours}h${minutes}`;
+  }
+
+  /* =========================
+     NEW ✅ CLICK TX -> DETAIL
+     ========================= */
+
+  goToTransactionDetail(tx: Transaction): void {
+    // ✅ on passe l'objet transaction directement (pas besoin de re-fetch)
+    this.router.navigate(['/transaction-detail'], {
+      state: { transaction: tx }
+    });
   }
 
   /* =========================
@@ -188,10 +205,11 @@ export class DashboardComponent implements OnInit {
   }
 
   goToInfo(): void {
-    this.router.navigate(['/info'], { 
-      state: { selectedAccount: this.selectedAccount } 
+    this.router.navigate(['/info'], {
+      state: { selectedAccount: this.selectedAccount }
     });
   }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/register']);

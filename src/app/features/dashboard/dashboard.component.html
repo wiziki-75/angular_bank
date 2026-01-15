@@ -7,8 +7,8 @@
     <!-- Sélecteur de compte -->
     <section class="account-selector-section" *ngIf="accounts.length > 0">
       <label for="account-select">Compte:</label>
-      <select 
-        id="account-select" 
+      <select
+        id="account-select"
         [(ngModel)]="selectedAccount"
         (change)="onAccountSelect(selectedAccount!)">
         <option *ngFor="let account of accounts" [ngValue]="account">
@@ -55,18 +55,24 @@
     </div>
 
     <div class="transaction-list" *ngIf="transactions && transactions.length > 0">
-      <div *ngFor="let tx of transactions" class="transaction-item">
+      <div
+        *ngFor="let tx of transactions"
+        class="transaction-item clickable"
+        (click)="goToTransactionDetail(tx)"
+        title="Voir le détail"
+      >
 
         <div class="tx-left">
           <!-- Avatar initiales -->
           <div class="avatar">
-            {{ getInitials(tx.receiverName || tx.senderName || tx.label || tx.name || '') }}
+            {{ getInitials(tx.emitter.id === selectedAccount?.id ? tx.receiver.owner.name : tx.emitter.owner.name) }}
           </div>
 
           <div class="tx-info">
             <!-- Nom émetteur/receveur -->
             <div class="tx-name">
-              {{ tx.receiverName || tx.senderName || tx.label || tx.name || 'Transaction' }}
+              {{ tx.emitter.id === selectedAccount?.id ? 'Pour ' + tx.receiver.owner.name : 'De ' +
+              tx.emitter.owner.name }}
             </div>
 
             <!-- Date format 14/01/2025 14h30 -->
@@ -77,12 +83,10 @@
         </div>
 
         <!-- Montant : négatif pour virement émis -->
-        <div class="tx-amount"
-             [class.credit]="(tx.type === 'EMIT' ? -tx.amount : tx.amount) > 0"
-             [class.debit]="(tx.type === 'EMIT' ? -tx.amount : tx.amount) < 0">
-          {{ (tx.type === 'EMIT' ? -tx.amount : tx.amount) | currency:'EUR':'symbol':'1.2-2' }}
+        <div class="tx-amount" [class.credit]="tx.emitter.id !== selectedAccount?.id"
+          [class.debit]="tx.emitter.id === selectedAccount?.id">
+          {{ (tx.emitter.id === selectedAccount?.id ? -tx.amount : tx.amount) | currency:'EUR':'symbol':'1.2-2' }}
         </div>
-
       </div>
     </div>
   </section>

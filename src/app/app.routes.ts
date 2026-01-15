@@ -4,15 +4,34 @@ import { TransactionComponent } from './features/transaction/transaction.compone
 import { InfoComponent } from './features/info/info.component';
 
 export const routes: Routes = [
-  // On redirige la racine vers register
+  // Redirection racine
   { path: '', redirectTo: 'register', pathMatch: 'full' },
-  // On charge directement le composant
+
+  // Auth
   { path: 'register', component: RegisterComponent },
-  // Exemple pour le futur dashboard
-  { 
-    path: 'dashboard', 
-    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+
+  // Dashboard (lazy)
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./features/dashboard/dashboard.component')
+        .then(m => m.DashboardComponent)
   },
+
+  // Virement
   { path: 'transaction', component: TransactionComponent },
-  { path: 'info', component: InfoComponent }
+
+  // 🔥 DÉTAIL TRANSACTION (manquant)
+  {
+    path: 'transaction-detail',
+    loadComponent: () =>
+      import('./features/transaction-detail/transaction-detail.component')
+        .then(m => m.TransactionDetailComponent)
+  },
+
+  // Info compte
+  { path: 'info', component: InfoComponent },
+
+  // Fallback sécurité
+  { path: '**', redirectTo: 'register' }
 ];
