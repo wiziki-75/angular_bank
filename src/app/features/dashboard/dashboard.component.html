@@ -7,7 +7,10 @@
     <!-- Sélecteur de compte -->
     <section class="account-selector-section" *ngIf="accounts.length > 0">
       <label for="account-select">Compte:</label>
-      <select id="account-select" [(ngModel)]="selectedAccount" (change)="onAccountSelect(selectedAccount!)">
+      <select
+        id="account-select"
+        [(ngModel)]="selectedAccount"
+        (change)="onAccountSelect(selectedAccount!)">
         <option *ngFor="let account of accounts" [ngValue]="account">
           {{ getAccountId(account) }} - {{ getAccountLabel(account) }}
         </option>
@@ -52,7 +55,12 @@
     </div>
 
     <div class="transaction-list" *ngIf="transactions && transactions.length > 0">
-      <div *ngFor="let tx of transactions" class="transaction-item">
+      <div
+        *ngFor="let tx of transactions"
+        class="transaction-item clickable"
+        (click)="goToTransactionDetail(tx)"
+        title="Voir le détail"
+      >
 
         <div class="tx-left">
           <!-- Avatar initiales -->

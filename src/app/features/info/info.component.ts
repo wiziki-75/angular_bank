@@ -24,11 +24,13 @@ export class InfoComponent implements OnInit {
   selectedAccount: Account | null = null;
   errorMessage: string = '';
 
+  // ✅ feedback "copié"
+  copiedKey: string | null = null;
+
   constructor(
     private authService: AuthService,
     private router: Router
   ) {
-    // Récupérer le compte depuis la navigation
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras?.state) {
       this.selectedAccount = navigation.extras.state['selectedAccount'];
@@ -37,8 +39,7 @@ export class InfoComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserData();
-    
-    // Si pas de compte sélectionné, rediriger vers dashboard
+
     if (!this.selectedAccount) {
       this.router.navigate(['/dashboard']);
     }
@@ -70,15 +71,14 @@ export class InfoComponent implements OnInit {
   getCreatedDate(): string {
     if (!this.selectedAccount) return 'Non disponible';
     const acc = this.selectedAccount as any;
-    
-    // Essayer plusieurs champs possibles (openAt est le champ correct selon l'interface Account)
+
     const dateValue = acc.openAt ?? acc.createdAt ?? acc.created_at ?? acc.openDate ?? acc.openedAt ?? acc.date;
-    
+
     if (!dateValue) {
       console.log('Aucune date trouvée dans:', acc);
       return 'Non disponible';
     }
-    
+
     return this.formatDate(dateValue);
   }
 
@@ -90,17 +90,44 @@ export class InfoComponent implements OnInit {
 
   formatDate(dateString: string): string {
     if (!dateString) return 'Non disponible';
-    
+
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
       console.log('Date invalide:', dateString);
       return 'Date invalide';
     }
-    
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  /* =========================
+     COPY HELPERS ✅
+     ========================= */
+
+  async copyToClipboard(value: string | number, key: string): Promise<void> {
+    try {
+      const text = String(value ?? '');
+      if (!text) return;
+
+      await navigator.clipboard.writeText(text);
+
+      this.copiedKey = key;
+      setTimeout(() => {
+        if (this.copiedKey === key) this.copiedKey = null;
+      }, 1200);
+    } catch (e) {
+      console.error('Erreur copie clipboard:', e);
+      this.errorMessage = "Impossible de copier l'information (permissions navigateur).";
+      setTimeout(() => (this.errorMessage = ''), 2000);
+    }
+  }
+
+  // ✅ prêts si plus tard tu affiches une transaction id
+  copyTransactionId(txId: string | number): void {
+    this.copyToClipboard(txId, 'txId');
   }
 
   goBack(): void {
