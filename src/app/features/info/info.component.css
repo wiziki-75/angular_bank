@@ -1,0 +1,109 @@
+.info-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Bouton retour */
+.btn-back {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #e8eaf6;
+  color: #1f3c88;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 20px;
+  transition: background 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-back:hover {
+  background: #d1d5f0;
+}
+
+h1 {
+  margin-bottom: 24px;
+}
+
+.info-card, .account-details {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+  margin-bottom: 20px;
+}
+
+.info-card h2, .account-details h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #1f3c88;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.info-value {
+  color: #333;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.detail-value.balance {
+  color: #2e7d32;
+  font-size: 20px;
+}
+
+.no-account {
+  background: #fff3e0;
+  padding: 20px;
+  border-radius: 14px;
+  text-align: center;
+  color: #e65100;
+}
+
+.error-message {
+  padding: 12px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}

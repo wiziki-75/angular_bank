@@ -4,6 +4,19 @@
   <header class="dashboard-header">
     <h2>Bonjour, {{ user?.name || 'Client' }}</h2>
 
+    <!-- Sélecteur de compte -->
+    <section class="account-selector-section" *ngIf="accounts.length > 0">
+      <label for="account-select">Compte:</label>
+      <select 
+        id="account-select" 
+        [(ngModel)]="selectedAccount"
+        (change)="onAccountSelect(selectedAccount!)">
+        <option *ngFor="let account of accounts" [ngValue]="account">
+          {{ getAccountId(account) }} - {{ getAccountLabel(account) }}
+        </option>
+      </select>
+    </section>
+
     <div class="balance-card">
       <small>Solde disponible</small>
       <h1 [class.positive]="balance >= 0" [class.negative]="balance < 0">
@@ -12,10 +25,19 @@
     </div>
   </header>
 
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
   <!-- Actions -->
   <section class="quick-actions">
     <button class="btn-primary" (click)="goToTransfer()">
       Effectuer un virement
+    </button>
+
+    <button class="btn-primary" (click)="goToInfo()">
+      Info
     </button>
 
     <button class="btn-secondary" (click)="logout()">
@@ -24,7 +46,7 @@
   </section>
 
   <!-- Transactions -->
-  <section class="transactions-section">
+  <section class="transactions-section" *ngIf="selectedAccount">
     <h3>Dernières opérations</h3>
 
     <!-- État vide -->

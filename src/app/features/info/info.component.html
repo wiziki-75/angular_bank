@@ -1,0 +1,55 @@
+<div class="info-container">
+  <!-- Bouton retour en haut -->
+  <button class="btn-back" (click)="goBack()">
+    ← Retour
+  </button>
+
+  <h1>Détails du Compte</h1>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="user && selectedAccount" class="user-info">
+    <!-- Informations Utilisateur -->
+    <div class="info-card">
+      <h2>Informations Utilisateur</h2>
+      <div class="info-row">
+        <span class="info-label">Nom:</span>
+        <span class="info-value">{{ user.name }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Code Client:</span>
+        <span class="info-value">{{ user.clientCode }}</span>
+      </div>
+    </div>
+
+    <!-- Détails du compte sélectionné -->
+    <div class="account-details">
+      <h2>Détails du Compte</h2>
+      <div class="details-grid">
+        <div class="detail-item">
+          <span class="detail-label">Id</span>
+          <span class="detail-value">{{ getAccountId() }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Label du compte</span>
+          <span class="detail-value">{{ getAccountLabel() }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Date d'ouverture</span>
+          <span class="detail-value">{{ getCreatedDate() }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Solde</span>
+          <span class="detail-value balance">{{ getBalance() }} €</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Si pas de compte -->
+  <div *ngIf="!selectedAccount" class="no-account">
+    <p>Aucun compte sélectionné. Retournez au dashboard.</p>
+  </div>
+</div>
