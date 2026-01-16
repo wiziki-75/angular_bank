@@ -5,11 +5,12 @@ import { TransactionService, EmitTransactionDTO } from '../../core/transaction.s
 import { AccountService, Account } from '../../core/account.service';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-transaction',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule],
   templateUrl: './transaction.component.html',
   styleUrl: './transaction.component.css'
 })
@@ -37,13 +38,23 @@ export class TransactionComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private transactionService: TransactionService,
     private accountService: AccountService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {
     this.transactionForm = this.fb.group({
       emitterAccountId: [{ value: '', disabled: true }, [Validators.required]],
       receiverAccountId: ['', [Validators.required]],
       amount: ['', [Validators.required, Validators.min(0.01)]],
       description: ['']
+    });
+  }
+
+  private showNotification(message: string, type: 'success' | 'error' | 'info', duration: number = 4000): void {
+    this.snackBar.open(message, 'Fermer', {
+      duration,
+      panelClass: [`${type}-snackbar`],
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
     });
   }
 
@@ -79,6 +90,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Erreur lors du chargement des comptes:', err);
         this.errorMessage = 'Impossible de charger vos comptes';
+        this.showNotification('Impossible de charger vos comptes', 'error');
         this.isLoadingAccounts = false;
       }
     });
@@ -171,6 +183,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         
         this.errorMessage = 'Erreur lors de l\'émission de la transaction'
+        this.showNotification('Erreur lors de l\'émission de la transaction', 'error');
         this.isRetrying = true;
         this.showPendingModal.set(false);
       }
@@ -228,6 +241,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
           this.cleanupMonitoring();
           this.showPendingModal.set(false);
           this.errorMessage = 'Erreur lors de la vérification de la transaction';
+          this.showNotification('Erreur lors de la vérification de la transaction', 'error');
           this.currentTransactionId = null;
         }
       });
@@ -241,6 +255,11 @@ export class TransactionComponent implements OnInit, OnDestroy {
     this.showPendingModal.set(false);
     this.currentTransactionId = null;
     this.successMessage = `Transaction effectuée avec succès ! Montant: ${transactionData.amount.toFixed(2)}€`;
+    this.showNotification(
+      `Transaction effectuée avec succès ! Montant: ${transactionData.amount.toFixed(2)}€`,
+      'success',
+      5000
+    );
     this.transactionForm.reset();
     this.selectedAccount = null;
     this.isRetrying = false;
@@ -251,6 +270,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
     this.showPendingModal.set(false);
     this.currentTransactionId = null;
     this.errorMessage = 'La transaction a échoué. Veuillez réessayer.';
+    this.showNotification('La transaction a échoué. Veuillez réessayer.', 'error');
     this.isRetrying = true;
   }
 
@@ -258,6 +278,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
     this.showPendingModal.set(false);
     this.currentTransactionId = null;
     this.successMessage = 'Transaction annulée avec succès';
+    this.showNotification('Transaction annulée avec succès', 'info', 3000);
     this.transactionForm.reset();
     this.selectedAccount = null;
     this.isRetrying = false;
@@ -280,12 +301,18 @@ export class TransactionComponent implements OnInit, OnDestroy {
           this.showPendingModal.set(false);
           this.currentTransactionId = null;
           this.errorMessage = 'La vérification de la transaction a pris trop de temps. Vérifiez votre historique.';
+          this.showNotification(
+            'La vérification de la transaction a pris trop de temps. Vérifiez votre historique.',
+            'error',
+            5000
+          );
         }
       },
       error: () => {
         this.showPendingModal.set(false);
         this.currentTransactionId = null;
         this.errorMessage = 'Impossible de vérifier le statut final de la transaction';
+        this.showNotification('Impossible de vérifier le statut final de la transaction', 'error');
       }
     });
   }
@@ -324,16 +351,19 @@ export class TransactionComponent implements OnInit, OnDestroy {
                 } else {
                   this.showPendingModal.set(false);
                   this.errorMessage = 'Impossible d\'annuler: la transaction est déjà terminée';
+                  this.showNotification('Impossible d\'annuler: la transaction est déjà terminée', 'error');
                 }
               },
               error: () => {
                 this.showPendingModal.set(false);
                 this.errorMessage = 'Erreur lors de la vérification de la transaction';
+                this.showNotification('Erreur lors de la vérification de la transaction', 'error');
               }
             });
           }
         } else {
           this.errorMessage = 'Erreur lors de l\'annulation de la transaction';
+          this.showNotification('Erreur lors de l\'annulation de la transaction', 'error');
         }
       }
     });
