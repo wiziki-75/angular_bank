@@ -28,6 +28,7 @@ export interface Transaction {
   date?: string;
   emittedAt?: string;
   issuedAt?: string;
+  status?: string;
 }
 
 @Component({
