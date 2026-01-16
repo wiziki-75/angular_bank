@@ -55,7 +55,6 @@ export class OpenAccountComponent {
       error: (error) => {
         this.isLoading = false;
         this.errorMessage = error.error?.message || 'Erreur lors de la création du compte';
-        console.error('Erreur lors de la création du compte:', error);
       }
     });
   }

@@ -85,10 +85,8 @@ export class TransactionComponent implements OnInit, OnDestroy {
         this.accounts = accounts;
         this.isLoadingAccounts = false;
         this.transactionForm.get('emitterAccountId')?.enable();
-        console.log('Comptes chargés:', accounts);
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des comptes:', err);
         this.errorMessage = 'Impossible de charger vos comptes';
         this.showNotification('Impossible de charger vos comptes', 'error');
         this.isLoadingAccounts = false;
@@ -172,7 +170,6 @@ export class TransactionComponent implements OnInit, OnDestroy {
     
     this.transactionService.emitTransaction(transactionData).subscribe({
       next: (response) => {
-        console.log('Transaction émise:', response);
         this.currentTransactionId = response.id;
         this.isLoading = false;
         
@@ -181,7 +178,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
         this.monitorTransactionStatus(response.id, transactionData);
       },
       error: (err) => {
-        console.error('Erreur lors de l\'émission de la transaction:', err);
+
         this.isLoading = false;
         
         this.errorMessage = 'Erreur lors de l\'émission de la transaction'
@@ -206,18 +203,13 @@ export class TransactionComponent implements OnInit, OnDestroy {
       
       const elapsed = Date.now() - startTime;
       
-      // Timeout atteint
       if (elapsed > maxDuration) {
-        console.warn('Timeout de surveillance atteint');
         this.handleTimeout(transactionId, transactionData);
         return;
       }
       
-      // Vérifier le statut
       this.statusCheckSubscription = this.transactionService.getTransaction(transactionId).subscribe({
         next: (transaction) => {
-          console.log('Statut de la transaction:', transaction.status);
-          
           const status = transaction.status.toLowerCase();
           
           if (status === 'completed') {
@@ -230,16 +222,12 @@ export class TransactionComponent implements OnInit, OnDestroy {
             this.cleanupMonitoring();
             this.handleCancellation();
           } else if (status === 'pending') {
-            // Continuer la surveillance
             this.monitoringTimeout = setTimeout(checkStatus, checkInterval);
           } else {
-            // Statut inconnu, continuer la surveillance
-            console.warn('Statut inconnu:', transaction.status);
             this.monitoringTimeout = setTimeout(checkStatus, checkInterval);
           }
         },
         error: (err) => {
-          console.error('Erreur lors de la vérification du statut:', err);
           this.cleanupMonitoring();
           this.showPendingModal.set(false);
           this.errorMessage = 'Erreur lors de la vérification de la transaction';
@@ -326,14 +314,12 @@ export class TransactionComponent implements OnInit, OnDestroy {
     
     this.transactionService.cancelTransaction(this.currentTransactionId).subscribe({
       next: () => {
-        console.log('Transaction annulée avec succès');
         this.isCancelling = false;
         this.isMonitoring = false;
         this.cleanupMonitoring();
         this.handleCancellation();
       },
       error: (err) => {
-        console.error('Erreur lors de l\'annulation:', err);
         this.isCancelling = false;
         
         if (err.status === 400 || err.status === 404) {

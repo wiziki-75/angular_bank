@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 
@@ -24,37 +24,22 @@ export class AccountService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token');
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  }
-
   openAccount(accountData: OpenAccountDTO): Observable<any> {
     return this.http.post(
       `${this.API_URL}/accounts`,
-      accountData,
-      { headers: this.getHeaders() }
+      accountData
     );
   }
 
   getAccounts(): Observable<Account[]> {
-    return this.http.get<Account[]>(
-      `${this.API_URL}/accounts`,
-      { headers: this.getHeaders() }
-    );
+    return this.http.get<Account[]>(`${this.API_URL}/accounts`);
   }
 
   getAccount(accountId: string): Observable<Account> {
-    return this.http.get<Account>(
-      `${this.API_URL}/accounts/${accountId}`,
-      { headers: this.getHeaders() }
-    );
+    return this.http.get<Account>(`${this.API_URL}/accounts/${accountId}`);
   }
 
   getAccountTransactions(accountId: string): Observable<any[]> {
-    return this.http.get<any[]>(
-      `${this.API_URL}/accounts/${accountId}/transactions`,
-      { headers: this.getHeaders() }
-    );
+    return this.http.get<any[]>(`${this.API_URL}/accounts/${accountId}/transactions`);
   }
 }
