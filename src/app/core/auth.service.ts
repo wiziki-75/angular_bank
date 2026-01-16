@@ -1,18 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'https://coding-bank.fly.dev';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
-
-  /* =========================
-     AUTH
-     ========================= */
 
   register(data: { name: string; password: string }): Observable<any> {
     return this.http.post(`${this.API_URL}/auth/register`, data).pipe(
@@ -51,10 +48,6 @@ export class AuthService {
     localStorage.removeItem('current_user');
   }
 
-  /* =========================
-     ACCOUNTS
-     ========================= */
-
   getAccounts(): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/accounts`, {
       headers: this.getAuthHeaders()
@@ -67,10 +60,6 @@ export class AuthService {
       { headers: this.getAuthHeaders() }
     );
   }
-
-  /* =========================
-     STORAGE HELPERS
-     ========================= */
 
   getStoredUser(): any | null {
     const raw = localStorage.getItem('current_user');

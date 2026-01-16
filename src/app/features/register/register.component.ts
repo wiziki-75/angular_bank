@@ -34,10 +34,6 @@ export class RegisterComponent implements OnInit {
     this.generateKeypad();
   }
 
-  /* =========================
-     KEYPAD
-     ========================= */
-
   generateKeypad(): void {
     const digits: number[] = Array.from({ length: 10 }, (_, i) => i);
     const shuffled = digits.sort(() => Math.random() - 0.5);
@@ -58,18 +54,10 @@ export class RegisterComponent implements OnInit {
     this.authForm.get('password')?.setValue(this.enteredPassword);
   }
 
-  /* =========================
-     CLEAR PASSWORD
-     ========================= */
-
   clearPassword(): void {
     this.enteredPassword = '';
     this.authForm.get('password')?.setValue('');
   }
-
-  /* =========================
-     FORM
-     ========================= */
 
   toggleMode(): void {
     this.isLoginMode = !this.isLoginMode;
