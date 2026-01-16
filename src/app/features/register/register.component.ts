@@ -34,26 +34,22 @@ export class RegisterComponent implements OnInit {
     this.generateKeypad();
   }
 
-  /* =========================
-     KEYPAD
-     ========================= */
+  /*keypad*/
 
   generateKeypad(): void {
   const digits: number[] = Array.from({ length: 10 }, (_, i) => i);
 
-  // ✅ Shuffle (Fisher-Yates) : mieux que sort(Math.random()-0.5)
+
   for (let i = digits.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [digits[i], digits[j]] = [digits[j], digits[i]];
   }
 
-  // Base keypad = 10 chiffres
   const keypad: (number | '')[] = [...digits];
 
-  // ✅ Choisir 2 positions distinctes parmi 0..12 (car on va avoir 12 touches au final)
   const positions = this.pickTwoEmptyPositions(12);
 
-  // ✅ Insérer les 2 trous (on insère dans l'ordre croissant pour ne pas décaler la seconde insertion)
+// 2 vides
   const [p1, p2] = positions.sort((a, b) => a - b);
   keypad.splice(p1, 0, '');
   keypad.splice(p2, 0, '');
@@ -63,7 +59,6 @@ export class RegisterComponent implements OnInit {
 }
 
 private pickTwoEmptyPositions(totalKeys: number): [number, number] {
-  // totalKeys = 12 (10 chiffres + 2 trous)
   const first = Math.floor(Math.random() * totalKeys);
   let second = Math.floor(Math.random() * totalKeys);
   while (second === first) {
@@ -81,18 +76,14 @@ private pickTwoEmptyPositions(totalKeys: number): [number, number] {
     this.authForm.get('password')?.setValue(this.enteredPassword);
   }
 
-  /* =========================
-     CLEAR PASSWORD
-     ========================= */
+  /*clear*/
 
   clearPassword(): void {
     this.enteredPassword = '';
     this.authForm.get('password')?.setValue('');
   }
 
-  /* =========================
-     FORM
-     ========================= */
+  /*form*/
 
   toggleMode(): void {
     this.isLoginMode = !this.isLoginMode;
@@ -108,12 +99,12 @@ private pickTwoEmptyPositions(totalKeys: number): [number, number] {
     if (this.isLoginMode) {
       this.authService.login({ clientCode: identifier, password }).subscribe({
         next: () => this.router.navigate(['/dashboard']),
-        error: err => console.error('❌ Login error', err)
+        error: err => console.error('Login error', err)
       });
     } else {
       this.authService.register({ name: identifier, password }).subscribe({
         next: () => this.router.navigate(['/dashboard']),
-        error: err => console.error('❌ Register error', err)
+        error: err => console.error('Register error', err)
       });
     }
   }
