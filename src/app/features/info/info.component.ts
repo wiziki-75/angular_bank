@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
 import { Account } from '../../core/account.service';
+import { DataParserService } from '../../core/data-parser.service';
+import { FormatService } from '../../core/format.service';
+import { ClipboardService } from '../../core/clipboard.service';
 import { Router } from '@angular/router';
 
 export interface User {
@@ -23,12 +26,13 @@ export class InfoComponent implements OnInit {
   user: User | null = null;
   selectedAccount: Account | null = null;
   errorMessage: string = '';
-
-  // ✅ feedback "copié"
   copiedKey: string | null = null;
 
   constructor(
     private authService: AuthService,
+    private dataParser: DataParserService,
+    private format: FormatService,
+    private clipboard: ClipboardService,
     private router: Router
   ) {
     const navigation = this.router.getCurrentNavigation();
@@ -52,30 +56,18 @@ export class InfoComponent implements OnInit {
     }
   }
 
-  /* =========================
-     HELPERS - Account properties
-     ========================= */
-
   getAccountId(): string | number {
-    if (!this.selectedAccount) return '';
-    const a = this.selectedAccount as any;
-    return a.id ?? a.accountId ?? a.account_id ?? '';
+    return this.dataParser.getAccountId(this.selectedAccount) || '';
   }
 
   getAccountLabel(): string {
-    if (!this.selectedAccount) return 'Sans label';
-    const a = this.selectedAccount as any;
-    return a.clientCode ?? a.label ?? a.name ?? 'Sans label';
+    return this.dataParser.getAccountLabel(this.selectedAccount);
   }
 
   getCreatedDate(): string {
-    if (!this.selectedAccount) return 'Non disponible';
-    const acc = this.selectedAccount as any;
-
-    const dateValue = acc.openAt ?? acc.createdAt ?? acc.created_at ?? acc.openDate ?? acc.openedAt ?? acc.date;
+    const dateValue = this.dataParser.getAccountCreatedDate(this.selectedAccount);
 
     if (!dateValue) {
-      console.log('Aucune date trouvée dans:', acc);
       return 'Non disponible';
     }
 
@@ -83,49 +75,30 @@ export class InfoComponent implements OnInit {
   }
 
   getBalance(): number {
-    if (!this.selectedAccount) return 0;
-    const acc = this.selectedAccount as any;
-    return acc.balance ?? acc.total ?? acc.solde ?? 0;
+    return this.dataParser.getAccountBalance(this.selectedAccount);
   }
 
   formatDate(dateString: string): string {
-    if (!dateString) return 'Non disponible';
-
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      console.log('Date invalide:', dateString);
+    const formatted = this.format.formatDate(dateString);
+    if (!formatted) {
       return 'Date invalide';
     }
-
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return formatted;
   }
 
-  /* =========================
-     COPY HELPERS ✅
-     ========================= */
-
   async copyToClipboard(value: string | number, key: string): Promise<void> {
-    try {
-      const text = String(value ?? '');
-      if (!text) return;
-
-      await navigator.clipboard.writeText(text);
-
+    const success = await this.clipboard.copyToClipboard(value);
+    if (success) {
       this.copiedKey = key;
       setTimeout(() => {
         if (this.copiedKey === key) this.copiedKey = null;
       }, 1200);
-    } catch (e) {
-      console.error('Erreur copie clipboard:', e);
+    } else {
       this.errorMessage = "Impossible de copier l'information (permissions navigateur).";
       setTimeout(() => (this.errorMessage = ''), 2000);
     }
   }
 
-  // ✅ prêts si plus tard tu affiches une transaction id
   copyTransactionId(txId: string | number): void {
     this.copyToClipboard(txId, 'txId');
   }

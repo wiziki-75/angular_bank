@@ -15,6 +15,8 @@ export class RegisterComponent implements OnInit {
 
   authForm!: FormGroup;
   isLoginMode = false;
+  errorMessage = '';
+  isLoading = false;
 
   keypad: (number | '')[] = [];
   enteredPassword = '';
@@ -66,19 +68,36 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.authForm.invalid) return;
+    if (this.authForm.invalid) {
+      this.errorMessage = 'Veuillez remplir tous les champs correctement';
+      return;
+    }
 
     const { identifier, password } = this.authForm.value;
+    this.errorMessage = '';
+    this.isLoading = true;
 
     if (this.isLoginMode) {
       this.authService.login({ clientCode: identifier, password }).subscribe({
-        next: () => this.router.navigate(['/dashboard']),
-        error: err => console.error('❌ Login error', err)
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/dashboard']);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.errorMessage = err.error?.message || 'Identifiant ou mot de passe incorrect';
+        }
       });
     } else {
       this.authService.register({ name: identifier, password }).subscribe({
-        next: () => this.router.navigate(['/dashboard']),
-        error: err => console.error('❌ Register error', err)
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/dashboard']);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.errorMessage = err.error?.message || 'Erreur lors de la création du compte';
+        }
       });
     }
   }
