@@ -51,8 +51,12 @@
         </div>
       </div>
 
-      <button type="submit" class="btn-primary">
-        {{ isLoginMode ? 'Se connecter' : 'Créer mon compte' }}
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="isLoading">
+        {{ isLoading ? 'Chargement...' : (isLoginMode ? 'Se connecter' : 'Créer mon compte') }}
       </button>
     </form>
 

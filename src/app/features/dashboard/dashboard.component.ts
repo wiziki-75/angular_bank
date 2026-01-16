@@ -47,7 +47,6 @@ export class DashboardComponent implements OnInit {
   selectedAccount: Account | null = null;
 
   balance = 0;
-  emitter = null;
   transactions: Transaction[] = [];
   errorMessage: string = '';
 
@@ -61,8 +60,6 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('Dashboard init');
-
     const storedUser = this.authService.getStoredUser();
     if (!storedUser) {
       this.router.navigate(['/register']);
@@ -73,17 +70,12 @@ export class DashboardComponent implements OnInit {
     this.loadAccounts();
   }
 
-  /* =========================
-     DATA
-     ========================= */
-
   private loadAccounts(): void {
     this.accountService.getAccounts().subscribe({
       next: (accounts) => {
         this.accounts = accounts;
 
         if (!accounts || accounts.length === 0) {
-          console.warn('Aucun compte trouvé');
           this.errorMessage = 'Aucun compte disponible';
           return;
         }
@@ -93,7 +85,6 @@ export class DashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erreur chargement comptes', err);
         this.errorMessage = 'Impossible de charger vos comptes';
       }
     });
@@ -117,8 +108,6 @@ export class DashboardComponent implements OnInit {
 
     this.accountService.getAccountTransactions(String(accountId)).subscribe({
       next: (txs) => {
-        console.log('Transactions chargées:', txs);
-        console.log(this.getAccountId());
         this.transactions = (txs ?? [])
           .sort((a: any, b: any) => {
             const da = new Date(this.dataParser.getTransactionDate(a) ?? 0).getTime();
@@ -127,18 +116,12 @@ export class DashboardComponent implements OnInit {
           })
           .slice(0, 5);
         this.cdr.detectChanges();
-        console.log(this.transactions)
       },
       error: (err) => {
-        console.error('Erreur chargement transactions', err);
         this.errorMessage = 'Impossible de charger les transactions';
       }
     });
   }
-
-  /* =========================
-     HELPERS - Account properties
-     ========================= */
 
   getAccountId(account?: Account): string | number | null {
     return this.dataParser.getAccountId(account ?? this.selectedAccount);
@@ -152,10 +135,6 @@ export class DashboardComponent implements OnInit {
     return this.dataParser.getAccountLabel(account ?? this.selectedAccount);
   }
 
-  /* =========================
-     UI HELPERS
-     ========================= */
-
   getInitials(name: string): string {
     return this.format.getInitials(name);
   }
@@ -164,20 +143,12 @@ export class DashboardComponent implements OnInit {
     return this.format.formatDateTime(date);
   }
 
-  /* =========================
-     NEW ✅ CLICK TX -> DETAIL
-     ========================= */
-
   goToTransactionDetail(tx: Transaction): void {
-    // ✅ on passe l'objet transaction directement (pas besoin de re-fetch)
+    // on passe l'objet transaction directement (pas besoin de re-fetch)
     this.router.navigate(['/transaction-detail'], {
       state: { transaction: tx }
     });
   }
-
-  /* =========================
-     ACTIONS
-     ========================= */
 
   goToTransfer(): void {
     this.router.navigate(['/transaction']);

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TransactionService } from '../../core/transaction.service';
 import { DataParserService } from '../../core/data-parser.service';
 import { FormatService } from '../../core/format.service';
+import { ClipboardService } from '../../core/clipboard.service';
 
 @Component({
   selector: 'app-transaction-detail',
@@ -17,7 +18,6 @@ export class TransactionDetailComponent implements OnInit {
   transaction: any = null;
   errorMessage = '';
   loading = true;
-
   copiedKey: string | null = null;
 
   constructor(
@@ -25,7 +25,8 @@ export class TransactionDetailComponent implements OnInit {
     private router: Router,
     private transactionService: TransactionService,
     private dataParser: DataParserService,
-    private format: FormatService
+    private format: FormatService,
+    private clipboard: ClipboardService
   ) {
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras?.state?.['transaction']) {
@@ -54,16 +55,11 @@ export class TransactionDetailComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Erreur chargement transaction:', err);
         this.errorMessage = "Impossible de charger la transaction.";
         this.loading = false;
       }
     });
   }
-
-  /* =========================
-     SAFE GETTERS (robustes)
-     ========================= */
 
   getTransactionId(): string {
     return this.dataParser.getTransactionId(this.transaction);
@@ -153,31 +149,18 @@ export class TransactionDetailComponent implements OnInit {
     return description || '—';
   }
 
-  /* =========================
-     COPY
-     ========================= */
-
   async copyToClipboard(value: string | number, key: string): Promise<void> {
-    try {
-      const text = String(value ?? '');
-      if (!text) return;
-
-      await navigator.clipboard.writeText(text);
-
+    const success = await this.clipboard.copyToClipboard(value);
+    if (success) {
       this.copiedKey = key;
       setTimeout(() => {
         if (this.copiedKey === key) this.copiedKey = null;
       }, 1200);
-    } catch (e) {
-      console.error('Erreur copie clipboard:', e);
+    } else {
       this.errorMessage = "Impossible de copier (permissions navigateur).";
       setTimeout(() => (this.errorMessage = ''), 2000);
     }
   }
-
-  /* =========================
-     ACTIONS
-     ========================= */
 
   goBack(): void {
     this.router.navigate(['/dashboard']);

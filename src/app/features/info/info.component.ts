@@ -5,6 +5,7 @@ import { AuthService } from '../../core/auth.service';
 import { Account } from '../../core/account.service';
 import { DataParserService } from '../../core/data-parser.service';
 import { FormatService } from '../../core/format.service';
+import { ClipboardService } from '../../core/clipboard.service';
 import { Router } from '@angular/router';
 
 export interface User {
@@ -25,14 +26,13 @@ export class InfoComponent implements OnInit {
   user: User | null = null;
   selectedAccount: Account | null = null;
   errorMessage: string = '';
-
-  // ✅ feedback "copié"
   copiedKey: string | null = null;
 
   constructor(
     private authService: AuthService,
     private dataParser: DataParserService,
     private format: FormatService,
+    private clipboard: ClipboardService,
     private router: Router
   ) {
     const navigation = this.router.getCurrentNavigation();
@@ -56,10 +56,6 @@ export class InfoComponent implements OnInit {
     }
   }
 
-  /* =========================
-     HELPERS - Account properties
-     ========================= */
-
   getAccountId(): string | number {
     return this.dataParser.getAccountId(this.selectedAccount) || '';
   }
@@ -72,7 +68,6 @@ export class InfoComponent implements OnInit {
     const dateValue = this.dataParser.getAccountCreatedDate(this.selectedAccount);
 
     if (!dateValue) {
-      console.log('Aucune date trouvée dans:', this.selectedAccount);
       return 'Non disponible';
     }
 
@@ -86,35 +81,24 @@ export class InfoComponent implements OnInit {
   formatDate(dateString: string): string {
     const formatted = this.format.formatDate(dateString);
     if (!formatted) {
-      console.log('Date invalide:', dateString);
       return 'Date invalide';
     }
     return formatted;
   }
 
-  /* =========================
-     COPY HELPERS ✅
-     ========================= */
-
   async copyToClipboard(value: string | number, key: string): Promise<void> {
-    try {
-      const text = String(value ?? '');
-      if (!text) return;
-
-      await navigator.clipboard.writeText(text);
-
+    const success = await this.clipboard.copyToClipboard(value);
+    if (success) {
       this.copiedKey = key;
       setTimeout(() => {
         if (this.copiedKey === key) this.copiedKey = null;
       }, 1200);
-    } catch (e) {
-      console.error('Erreur copie clipboard:', e);
+    } else {
       this.errorMessage = "Impossible de copier l'information (permissions navigateur).";
       setTimeout(() => (this.errorMessage = ''), 2000);
     }
   }
 
-  // ✅ prêts si plus tard tu affiches une transaction id
   copyTransactionId(txId: string | number): void {
     this.copyToClipboard(txId, 'txId');
   }
