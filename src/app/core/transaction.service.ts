@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 
@@ -18,31 +18,21 @@ export class TransactionService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token');
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  }
-
   emitTransaction(transactionData: EmitTransactionDTO): Observable<any> {
     return this.http.post(
       `${this.API_URL}/transactions/emit`,
-      transactionData,
-      { headers: this.getHeaders() }
+      transactionData
     );
   }
 
   getTransaction(transactionId: string): Observable<any> {
-    return this.http.get(
-      `${this.API_URL}/transactions/${transactionId}`,
-      { headers: this.getHeaders() }
-    );
+    return this.http.get(`${this.API_URL}/transactions/${transactionId}`);
   }
 
   cancelTransaction(transactionId: string): Observable<any> {
     return this.http.post(
       `${this.API_URL}/transactions/${transactionId}/cancel`,
-      {},
-      { headers: this.getHeaders() }
+      {}
     );
   }
 }

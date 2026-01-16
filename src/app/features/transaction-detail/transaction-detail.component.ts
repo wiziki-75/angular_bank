@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TransactionService } from '../../core/transaction.service';
+import { DataParserService } from '../../core/data-parser.service';
+import { FormatService } from '../../core/format.service';
 
 @Component({
   selector: 'app-transaction-detail',
@@ -21,7 +23,9 @@ export class TransactionDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private transactionService: TransactionService
+    private transactionService: TransactionService,
+    private dataParser: DataParserService,
+    private format: FormatService
   ) {
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras?.state?.['transaction']) {
@@ -61,48 +65,14 @@ export class TransactionDetailComponent implements OnInit {
      SAFE GETTERS (robustes)
      ========================= */
 
-  private pickFirst(obj: any, keys: string[]): any {
-    if (!obj) return undefined;
-    for (const k of keys) {
-      if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k];
-    }
-    return undefined;
-  }
-
-  private extractId(value: any): string {
-    if (value === undefined || value === null) return '';
-    // si c'est déjà un string/number
-    if (typeof value === 'string' || typeof value === 'number') return String(value);
-
-    // si c'est un objet imbriqué { id: ... } ou { accountId: ... }
-    if (typeof value === 'object') {
-      const v =
-        value.id ??
-        value.accountId ??
-        value.account_id ??
-        value._id ??
-        value.uuid ??
-        '';
-      return String(v ?? '');
-    }
-
-    return '';
-  }
-
-  /* =========================
-     UI HELPERS
-     ========================= */
-
   getTransactionId(): string {
-    const t = this.transaction as any;
-    return String(t?.id ?? t?.transactionId ?? t?._id ?? t?.uuid ?? '');
+    return this.dataParser.getTransactionId(this.transaction);
   }
 
-  // ✅ FIX: on couvre un maximum de formats possibles
   getEmitterAccountId(): string {
     const t = this.transaction as any;
 
-    const raw = this.pickFirst(t, [
+    const raw = this.dataParser.pickFirst(t, [
       'emitterAccountId',
       'emitter_account_id',
       'emitterId',
@@ -120,13 +90,13 @@ export class TransactionDetailComponent implements OnInit {
       'accountFrom'
     ]);
 
-    return this.extractId(raw);
+    return this.dataParser.extractId(raw);
   }
 
   getReceiverAccountId(): string {
     const t = this.transaction as any;
 
-    const raw = this.pickFirst(t, [
+    const raw = this.dataParser.pickFirst(t, [
       'receiverAccountId',
       'receiver_account_id',
       'receiverId',
@@ -142,7 +112,7 @@ export class TransactionDetailComponent implements OnInit {
       'accountTo'
     ]);
 
-    return this.extractId(raw);
+    return this.dataParser.extractId(raw);
   }
 
   getDisplayName(): string {
@@ -151,31 +121,16 @@ export class TransactionDetailComponent implements OnInit {
   }
 
   getInitials(name: string): string {
-    if (!name) return '';
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    return this.format.getInitials(name);
   }
 
   getDateValue(): any {
-    const t = this.transaction as any;
-    return t?.createdAt ?? t?.date ?? t?.emittedAt ?? t?.issuedAt ?? t?.updatedAt;
+    return this.dataParser.getTransactionDate(this.transaction);
   }
 
   formatDate(date: any): string {
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return 'Non disponible';
-
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}h${minutes}`;
+    const formatted = this.format.formatDateTime(date);
+    return formatted || 'Non disponible';
   }
 
   getSignedAmount(): number {
@@ -189,13 +144,13 @@ export class TransactionDetailComponent implements OnInit {
   }
 
   getStatus(): string {
-    const t = this.transaction as any;
-    return t?.status ?? t?.state ?? '—';
+    const status = this.dataParser.getTransactionStatus(this.transaction);
+    return status || '—';
   }
 
   getDescription(): string {
-    const t = this.transaction as any;
-    return t?.description ?? t?.label ?? t?.reason ?? '—';
+    const description = this.dataParser.getTransactionDescription(this.transaction);
+    return description || '—';
   }
 
   /* =========================

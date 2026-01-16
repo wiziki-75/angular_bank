@@ -1,18 +1,15 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, tap, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'https://coding-bank.fly.dev';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
-
-  /* =========================
-     AUTH
-     ========================= */
 
   register(data: { name: string; password: string }): Observable<any> {
     return this.http.post(`${this.API_URL}/auth/register`, data).pipe(
@@ -36,9 +33,7 @@ export class AuthService {
     const token = this.getStoredToken();
     if (!token) return throwError(() => new Error('No token'));
 
-    return this.http.get(`${this.API_URL}/auth/current-user`, {
-      headers: this.getAuthHeaders()
-    }).pipe(
+    return this.http.get(`${this.API_URL}/auth/current-user`).pipe(
       tap((res: any) => {
         const user = res?.user ?? res;
         if (user) localStorage.setItem('current_user', JSON.stringify(user));
@@ -49,23 +44,6 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('current_user');
-  }
-
-  /* =========================
-     ACCOUNTS
-     ========================= */
-
-  getAccounts(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/accounts`, {
-      headers: this.getAuthHeaders()
-    });
-  }
-
-  getTransactions(accountId: string): Observable<any[]> {
-    return this.http.get<any[]>(
-      `${this.API_URL}/accounts/${accountId}/transactions`,
-      { headers: this.getAuthHeaders() }
-    );
   }
 
   /* =========================
@@ -97,17 +75,5 @@ export class AuthService {
 
     if (token) localStorage.setItem('access_token', token);
     if (user) localStorage.setItem('current_user', JSON.stringify(user));
-
-    // Debug
-    console.log('AUTH RESPONSE:', res);
-    console.log('TOKEN STORED:', token);
-    console.log('USER STORED:', user);
-  }
-
-  private getAuthHeaders(): HttpHeaders {
-    const token = this.getStoredToken();
-    return new HttpHeaders({
-      Authorization: `Bearer ${token ?? ''}`
-    });
   }
 }
