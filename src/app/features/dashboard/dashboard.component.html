@@ -62,13 +62,13 @@
         <div class="tx-left">
           <!-- Avatar initiales -->
           <div class="avatar">
-            {{ getInitials(tx.emitter.id === selectedAccount?.id ? tx.receiver.owner.name : tx.emitter.owner.name) }}
+            {{ getInitials(tx.emitter.id === selectedAccount.id ? tx.receiver.owner.name : tx.emitter.owner.name) }}
           </div>
 
           <div class="tx-info">
             <!-- Nom émetteur/receveur -->
             <div class="tx-name">
-              {{ tx.emitter.id === selectedAccount?.id ? 'Pour ' + tx.receiver.owner.name : 'De ' +
+              {{ tx.emitter.id === selectedAccount.id ? 'Pour ' + tx.receiver.owner.name : 'De ' +
               tx.emitter.owner.name }}
             </div>
 
@@ -80,10 +80,10 @@
         </div>
 
         <!-- Montant : négatif pour virement émis -->
-        <div class="tx-amount" [class.credit]="tx.emitter.id !== selectedAccount?.id"
-          [class.debit]="tx.emitter.id === selectedAccount?.id" [class.canceled]="tx.status === 'canceled'">
+        <div class="tx-amount" [class.credit]="tx.emitter.id !== selectedAccount.id"
+          [class.debit]="tx.emitter.id === selectedAccount.id" [class.canceled]="tx.status === 'canceled'">
 
-          {{ (tx.emitter.id === selectedAccount?.id ? -tx.amount : tx.amount) | currency:'EUR':'symbol':'1.2-2' }}
+          {{ (tx.emitter.id === selectedAccount.id ? -tx.amount : tx.amount) | currency:'EUR':'symbol':'1.2-2' }}
 
           <span *ngIf="tx.status === 'canceled'" class="status-label">
             (Annulée)
