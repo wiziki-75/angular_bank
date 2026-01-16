@@ -124,6 +124,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.successMessage = '';
+    this.isRetrying = false;
 
     if (this.transactionForm.invalid) {
       this.errorMessage = 'Veuillez remplir tous les champs correctement';
@@ -166,6 +167,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
   }
 
   processTransaction(transactionData: EmitTransactionDTO): void {
+    this.isRetrying = false;
     this.showPendingModal.set(true);
     
     this.transactionService.emitTransaction(transactionData).subscribe({
