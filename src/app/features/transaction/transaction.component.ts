@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TransactionService, EmitTransactionDTO } from '../../core/transaction.service';
@@ -24,7 +24,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
   isRetrying: boolean = false;
   
   // Modal et gestion de l'annulation
-  showPendingModal: boolean = false;
+  showPendingModal = signal(false);
   currentTransactionId: string | null = null;
   isCancelling: boolean = false;
   isMonitoring: boolean = false;
@@ -154,7 +154,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
   }
 
   processTransaction(transactionData: EmitTransactionDTO): void {
-    this.showPendingModal = true;
+    this.showPendingModal.set(true);
     
     this.transactionService.emitTransaction(transactionData).subscribe({
       next: (response) => {
@@ -172,7 +172,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
         
         this.errorMessage = 'Erreur lors de l\'émission de la transaction'
         this.isRetrying = true;
-        this.showPendingModal = false;
+        this.showPendingModal.set(false);
       }
     });
   }
@@ -226,7 +226,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Erreur lors de la vérification du statut:', err);
           this.cleanupMonitoring();
-          this.showPendingModal = false;
+          this.showPendingModal.set(false);
           this.errorMessage = 'Erreur lors de la vérification de la transaction';
           this.currentTransactionId = null;
         }
@@ -238,7 +238,7 @@ export class TransactionComponent implements OnInit, OnDestroy {
   }
 
   handleSuccess(transactionData: EmitTransactionDTO): void {
-    this.showPendingModal = false;
+    this.showPendingModal.set(false);
     this.currentTransactionId = null;
     this.successMessage = `Transaction effectuée avec succès ! Montant: ${transactionData.amount.toFixed(2)}€`;
     this.transactionForm.reset();
@@ -248,14 +248,14 @@ export class TransactionComponent implements OnInit, OnDestroy {
   }
 
   handleFailure(transactionData: EmitTransactionDTO): void {
-    this.showPendingModal = false;
+    this.showPendingModal.set(false);
     this.currentTransactionId = null;
     this.errorMessage = 'La transaction a échoué. Veuillez réessayer.';
     this.isRetrying = true;
   }
 
   handleCancellation(): void {
-    this.showPendingModal = false;
+    this.showPendingModal.set(false);
     this.currentTransactionId = null;
     this.successMessage = 'Transaction annulée avec succès';
     this.transactionForm.reset();
@@ -277,13 +277,13 @@ export class TransactionComponent implements OnInit, OnDestroy {
           this.handleCancellation();
         } else {
           // Toujours en attente après timeout
-          this.showPendingModal = false;
+          this.showPendingModal.set(false);
           this.currentTransactionId = null;
           this.errorMessage = 'La vérification de la transaction a pris trop de temps. Vérifiez votre historique.';
         }
       },
       error: () => {
-        this.showPendingModal = false;
+        this.showPendingModal.set(false);
         this.currentTransactionId = null;
         this.errorMessage = 'Impossible de vérifier le statut final de la transaction';
       }
@@ -322,12 +322,12 @@ export class TransactionComponent implements OnInit, OnDestroy {
                     description: transaction.description || ''
                   });
                 } else {
-                  this.showPendingModal = false;
+                  this.showPendingModal.set(false);
                   this.errorMessage = 'Impossible d\'annuler: la transaction est déjà terminée';
                 }
               },
               error: () => {
-                this.showPendingModal = false;
+                this.showPendingModal.set(false);
                 this.errorMessage = 'Erreur lors de la vérification de la transaction';
               }
             });

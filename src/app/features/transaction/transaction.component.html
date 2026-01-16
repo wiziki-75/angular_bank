@@ -110,7 +110,7 @@
   </form>
 
   <!-- Modal de transaction en attente avec possibilité d'annulation -->
-  <div *ngIf="!isRetrying && showPendingModal" class="modal-overlay">
+  <div *ngIf="!isRetrying && showPendingModal()" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
         <h2>Transaction en cours</h2>
