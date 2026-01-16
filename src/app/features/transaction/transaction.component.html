@@ -86,30 +86,49 @@
 
     <!-- Description -->
     <div class="form-group">
-      <label for="description">Description *</label>
+      <label for="description">Description</label>
       <textarea 
         id="description" 
         formControlName="description"
-        placeholder="Description de la transaction"
+        placeholder="Description de la transaction (optionnel)"
         rows="3"
         class="form-control"
       ></textarea>
-      <div *ngIf="transactionForm.get('description')?.invalid && transactionForm.get('description')?.touched" class="error-text">
-        <span *ngIf="transactionForm.get('description')?.errors?.['required']">La description est requise</span>
-        <span *ngIf="transactionForm.get('description')?.errors?.['minlength']">
-          La description doit contenir au moins 3 caractères
-        </span>
-      </div>
     </div>
 
-    <!-- Bouton de soumission -->
+    <!-- Bouton de soumission - change selon l'état -->
     <button 
       type="submit" 
-      class="btn btn-primary"
+      class="btn"
+      [ngClass]="isRetrying ? 'btn-retry-main' : 'btn-primary'"
       [disabled]="transactionForm.invalid || isLoading"
     >
-      <span *ngIf="!isLoading">Envoyer la transaction</span>
+      <span *ngIf="!isLoading && !isRetrying">Envoyer la transaction</span>
+      <span *ngIf="!isLoading && isRetrying">↻ Réessayer la transaction</span>
       <span *ngIf="isLoading">Traitement en cours...</span>
     </button>
   </form>
+
+  <!-- Modal de transaction en attente avec possibilité d'annulation -->
+  <div *ngIf="!isRetrying && showPendingModal()" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Transaction en cours</h2>
+      </div>
+      <div class="modal-body">
+        <div class="spinner"></div>
+        <p>Votre transaction est en cours de traitement...</p>
+        <p class="modal-info">Vous pouvez annuler la transaction pendant qu'elle est en attente.</p>
+      </div>
+      <div class="modal-footer">
+        <button 
+          class="btn btn-cancel" 
+          (click)="cancelTransaction()"
+          [disabled]="isCancelling">
+          <span *ngIf="!isCancelling">Annuler la transaction</span>
+          <span *ngIf="isCancelling">Annulation...</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
